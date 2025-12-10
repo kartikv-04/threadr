@@ -6,50 +6,51 @@ import { useChannelStore } from "@/store/channel.store";
 import { useAuthStore } from "@/store/auth.store";
 import { useUIStore } from "@/store/ui.store";
 import {
-    Hash,
-    LogOut,
-    ChevronDown,
-    MessageSquare,
-    Mic,
-    Headphones,
-    MoreVertical,
-    Pencil,
-    Trash,
-    Settings
+        Hash,
+        LogOut,
+        ChevronDown,
+        MessageSquare,
+        Mic,
+        Headphones,
+        MoreVertical,
+        Pencil,
+        Trash,
+        Settings,
+        Plus
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
+        DropdownMenu,
+        DropdownMenuContent,
+        DropdownMenuItem,
+        DropdownMenuSeparator,
+        DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
+        Dialog,
+        DialogContent,
+        DialogDescription,
+        DialogFooter,
+        DialogHeader,
+        DialogTitle,
 } from "@/components/ui/dialog";
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
+        AlertDialog,
+        AlertDialogAction,
+        AlertDialogCancel,
+        AlertDialogContent,
+        AlertDialogDescription,
+        AlertDialogFooter,
+        AlertDialogHeader,
+        AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
+        Popover,
+        PopoverContent,
+        PopoverTrigger,
 } from "@/components/ui/popover";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
@@ -198,6 +199,15 @@ export default function Sidebar() {
                             </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-56 bg-zinc-900 border-zinc-800 text-zinc-200">
+                            <DropdownMenuItem
+                                onClick={() => setIsRenameOpen(true)}
+                                className="cursor-pointer hover:bg-zinc-800 focus:bg-zinc-800"
+                            >
+                                <Plus className="h-4 w-4 mr-2" />
+                                Create Channel
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator className="bg-zinc-800" />
+
                             <DropdownMenuItem
                                 onClick={() => setIsRenameOpen(true)}
                                 className="cursor-pointer hover:bg-zinc-800 focus:bg-zinc-800"

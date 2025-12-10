@@ -45,7 +45,7 @@ export const getChannelInfoService = async (channelId: string) => {
         // Find Channel by id
         const channelinfo = await channelModel.findById(channelId)
             .populate("createdBy", "username email")
-            .populate("memebrs", "username isOnline lastSeen")
+            .populate("members", "username isOnline lastSeen")
         logger.info("channle info fetched successfully");
         return channelinfo;
     }

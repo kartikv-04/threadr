@@ -63,7 +63,7 @@ const startServer = async () => {
 
     // Register handlers
     io.on("connection", (socket) => {
-      logger.info(`🔌 Socket connected: ${socket.id}`);
+      logger.info(`Socket connected: ${socket.id}`);
       registerChatSocketHandlers(io, socket);
     });
 
