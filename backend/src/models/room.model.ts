@@ -21,7 +21,6 @@ const roomSchema = new mongoose.Schema<Room>({
     messages : [{
         type : mongoose.Types.ObjectId,
         ref : "Message",
-        index : true
     }]
 },{timestamps : true})
 

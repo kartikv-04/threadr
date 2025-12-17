@@ -4,7 +4,9 @@ import mongoose, {Document} from "mongoose";
 interface User extends Document {
     username : string,
     name : string,
+    email : string,
     password : string,
+    refreshToken : string
     isOnline : boolean,
     lastSeenAt : Date,
 
@@ -14,16 +16,39 @@ interface User extends Document {
 const userSchema = new mongoose.Schema<User> ({
     username : {
         type : String,
-        required : true
+        required : true,
+        unique : true,
+        minlength : 3,
+        maxlength : 20,
+        match: [/^[a-z0-9_]+$/, "Invalid username"],
+        lowercase : true,
+        trim : true
+
     },
     name : {
         type : String,
-        required : true
+        required : true,
+        minlength : 3,
+        maxlength : 20
+    },
+    email : {
+        type : String,
+        required : true,
+        unique : true,
+        minlength : 6,
+        match: [/^\S+@\S+\.\S+$/, "Invalid email"],
+        trim : true,
+        lowercase : true
     },
     password : {
         type  :String,
         required : true,
-        selected : false
+        select : false,
+        minlength : 6
+    },
+    refreshToken : {
+        type : String,
+        select : false
     },
     isOnline : {
         type : Boolean,
@@ -31,7 +56,7 @@ const userSchema = new mongoose.Schema<User> ({
     },
     lastSeenAt : {
         type : Date,
-        default : Date.now()
+        default : Date.now
     }
 }, {timestamps : true})
 

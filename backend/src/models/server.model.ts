@@ -1,9 +1,9 @@
-import mongoose, {Document, Types} from 'mongoose';
+import mongoose, {Document, Types, Schema} from 'mongoose';
 
 // types for Server model
 interface Server extends Document{
     name : string,
-    createdBy : string,
+    createdBy : Schema.Types.ObjectId,
     members : Types.ObjectId[]
 
 }
@@ -15,12 +15,14 @@ const serverSchema = new mongoose.Schema<Server>({
         required : true
     },
     createdBy : {
-        type : String,
+        type : mongoose.Types.ObjectId,
+        ref : "User",
         required : true
     },
     members : [{
         type : mongoose.Types.ObjectId,
-        ref : "User"
+        ref : "User",
+        index : true
     }]
 }, {timestamps : true})
 
