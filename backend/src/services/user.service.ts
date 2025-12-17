@@ -65,13 +65,11 @@ export const signup = async ( user : SignupArg ) : Promise<UserResponse> => {
             })
 
             return {
-                user : {
                     id : newUser._id,
                     username : newUser.username,
                     name : newUser.name,
-                    email : newUser.email
-                },
-                token : token.accessToken
+                    email : newUser.email,
+                    token : token.accessToken
             }
     }
     catch(err : any){

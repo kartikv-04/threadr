@@ -2,16 +2,17 @@ import mongoose, {Document, Types, Schema} from "mongoose";
 
 // Types for room model
 interface Room extends Document {
-    name : string,
+    roomName : string,
     server : Schema.Types.ObjectId,
     messages : Types.ObjectId[]
 }
 
 // Shchema for room model
 const roomSchema = new mongoose.Schema<Room>({
-    name : {
+    roomName : {
         type : String,
-        required : true
+        required : true,
+        unique : true
     },
     server : {
         type : mongoose.Types.ObjectId,
