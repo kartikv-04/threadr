@@ -2,30 +2,9 @@ import { Types, Schema } from "mongoose"
 import logger from "../config/logger.js"
 import { roomModel } from "../models/room.model.js"
 import { serverModel } from "../models/server.model.js"
+import type { NewRoomRequest, ReturnNewRoom, getRoomRequest, GetRoomResponse } from "../types/types.js"
 
-// Request type or creating new Room
-type NewRoomRequest = {
-    userId : Schema.Types.ObjectId,
-    roomName : string,
-    serverId : Types.ObjectId
-}
 
-// Response type for creating new Room
-type ReturnNewRoom = {
-    roomId : Types.ObjectId
-    roomName : string,
-    serverId : Schema.Types.ObjectId
-}
-
-type getRoomRequest = {
-    userId : Types.ObjectId,
-    serverId : Types.ObjectId
-}
-
-type GetRoomResponse = {
-    roomId : Types.ObjectId,
-    roomName : string,
-}
 
 export const createRoom = async ( data : NewRoomRequest) : Promise<ReturnNewRoom> => {
     try {

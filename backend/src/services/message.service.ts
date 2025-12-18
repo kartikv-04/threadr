@@ -2,23 +2,8 @@ import type { Types } from "mongoose"
 import logger from "../config/logger.js"
 import { serverModel } from "../models/server.model.js"
 import { messageModel } from "../models/message.model.js"
-import { populate } from "dotenv"
+import type { SendMessage, SendMessageResponse } from "../types/types.js"
 
-type SendMessage = {
-    userId : Types.ObjectId,
-    serverId : Types.ObjectId,
-    roomId : Types.ObjectId,
-    content : string
-}
-
-type SendMessageResponse = {
-    messageId : string,
-    content : string,
-    isEdited : boolean,
-    userId : string,
-    sentBy : string,
-    createdAt : Date
-}
 
 export const sendMessageService = async ( data : SendMessage ) : Promise<SendMessageResponse> => {
     try {

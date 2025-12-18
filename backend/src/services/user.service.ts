@@ -1,32 +1,8 @@
 import { userModel } from '../models/user.model.js';
-import { generateToken, hashPassword } from '../helper/utility.js';
+import { generateToken, hashPassword, newPersonalServer } from '../helper/utility.js';
 import logger from '../config/logger.js';
-import { Types } from 'mongoose';
-import bcrypt from 'bcryptjs';
+import type{ SignupArg, UserResponse, SigninArg,  } from '../types/types.js';
 
-// Type for Function arguments in Signup
-type SignupArg = {
-    username : string,
-    name : string,
-    email : string,
-    password : string
-}
-
-// Return signup function type
-type UserResponse = {
-        id : Types.ObjectId,
-        username : string,
-        name : string,
-        email : string,
-        token : string
-}
-
-// Signin function type
-type SigninArg = {
-    email : string,
-    password : string,
-    token : string
-}
 
 // Signup Service function
 export const signup = async ( user : SignupArg ) : Promise<UserResponse> => {
@@ -64,12 +40,18 @@ export const signup = async ( user : SignupArg ) : Promise<UserResponse> => {
                 refreshToken : token.refreshToken
             })
 
+            const id = newUser._id.toString();
+
+            // Get Personal server created for user
+            const userServer = newPersonalServer(id);
+
             return {
                     id : newUser._id,
                     username : newUser.username,
                     name : newUser.name,
                     email : newUser.email,
-                    token : token.accessToken
+                    token : token.accessToken,
+                    server : userServer
             }
     }
     catch(err : any){

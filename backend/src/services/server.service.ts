@@ -1,27 +1,7 @@
-import type { Types } from "mongoose"
+import type { CreateServer, NewServerResponse, GetMemberRequest, GetMemberResponse, GetServerType, GetServerResponse } from "../types/types.js";
 import { serverModel } from "../models/server.model.js"
 import logger from "../config/logger.js"
 
-type CreateServer = {
-    userId : Types.ObjectId,
-    serverName : string,
-}
-
-type NewServerResponse = { 
-    serverName : string,
-    members : string[],
-    createdBy : string,
-    createdAt : Date
-}
-
-type GetMemberRequest = {
-    userId : Types.ObjectId,
-    serverId : Types.ObjectId
-}
-
-type GetMemberResponse = {
-    members : string[]
-}
 
 export const createServer = async ( data : CreateServer) : Promise<NewServerResponse> => {
     try {
@@ -92,4 +72,39 @@ export const getServerMembers = async ( data : GetMemberRequest) : Promise<GetMe
             members : populateResponse.members.map(( user : any)=>user.username)
         }
     }
+    catch(err : any){
+        logger.error({err}, "Could not get the memeber's username");
+        throw new Error("Error fetching memebers, try again!");
+    }
+}
+
+export const getServerList = async ( data : GetServerType) : Promise<GetServerResponse> => {
+    // Check and validate data
+    if (!data.userId){
+        logger.error("Userid not provided!!");
+        throw new Error("Empty userid provided, try again!");
+    }
+    
+    // Find Server of which user is part of
+    const findServer = await serverModel
+        .find({members : data.userId})
+        .select("._id name")
+        .lean();
+    
+    if(!findServer){
+        logger.info("user is not yet part of any server");
+        throw new Error("No server found!");
+    }
+
+    // create formatted response strucutre
+    const formattedServers = findServer.map(server => ({
+        serverId: server._id.toString(),
+        name: server.name
+    }));
+
+    // Return the populated server
+    return{ findServer : formattedServers};
+
+    
+
 }

@@ -2,6 +2,8 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { ACCESS_SECRET, REFRESH_SECRET } from '../config/env.js';
 import type { Types } from 'mongoose';
+import type { PersonalServer, PersonalServerResponse } from '../types/types.js';
+import { serverModel } from '../models/server.model.js';
 
 type TokenPair = {
     accessToken : string,
@@ -24,4 +26,26 @@ export const generateToken = (userId : Types.ObjectId) : TokenPair => {
          refreshToken   
     }
 
+}
+
+export const newPersonalServer = async ( userId : string) : Promise<string> => {
+    try {
+        // Check if user if user id is not empty
+        if (!userId){
+            throw new Error("user id Not provided!");
+        }
+
+        // Create a default PErsonal Welcome Server with Welcome room in it
+        const personalNewServer = await serverModel.create({
+            name : "Welcome",
+            createdBy : userId,
+            members : userId,
+            isPersonal : true,
+        })
+
+        // return Created Server's Name only
+        return{
+            serverName : personalNewServer.name
+        }
+    }
 }
