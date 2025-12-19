@@ -5,6 +5,7 @@ import cors from 'cors';
 import { Server } from 'socket.io';
 import logger from './config/logger.js';
 import { connectDB } from './config/db.js';
+import indexRouter from '../src/routes/index.route.js'
 
 const PORT = 5000;
 
@@ -17,6 +18,8 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.urlencoded({extended : true}));
+
+app.use('/api/v1', indexRouter);
 
 // Create Server and io
 const server = http.createServer(app);

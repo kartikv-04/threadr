@@ -63,8 +63,8 @@ export type ReturnNewRoom = {
 
 // Request Type for GetAllRooms for Server
 export type getRoomRequest = {
-    userId : Types.ObjectId,
-    serverId : Types.ObjectId
+    userId : string,
+    serverId : string
 }
 
 // Response Type for GetAllRomm 

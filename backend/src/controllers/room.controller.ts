@@ -38,19 +38,28 @@ export const newRoom = async (req : Request, res : Response) => {
 // 2. Get Room List
 export const getRoom = async (req : Request, res : Response) => {
     try {
-        // 1. Destructure the req body
-        const {userId, serverId} = req.body;
+        // 1. Get userId and serverId from query parameters (RESTful approach for GET requests)
+        const userId = req.query.userId as string;
+        const serverId = req.query.serverId as string;
 
-        // 2. create data object
+        // 2. Validate required parameters
+        if (!userId || !serverId) {
+            return res.status(400).json({
+                success : false,
+                message : "userId and serverId are required as query parameters"
+            });
+        }
+
+        // 3. Create data object
         const data = {
             userId,
             serverId
         }
 
-        // 3. Get rooms
+        // 4. Get rooms
         const result = await getRooms( data );
 
-        // Return response
+        // 5. Return response
         return res.status(200).json({
             success : true,
             message : "Room Fetched Successfully",
@@ -59,10 +68,10 @@ export const getRoom = async (req : Request, res : Response) => {
     }
     // Handle the error using catch
     catch(error :any){
-        logger.error(`"Error fecthing room names`, error);
+        logger.error(`Error fetching room names`, error);
         return res.status(500).json({
             success : false,
-            message : "Error getting room list"
+            message : error.message || "Error getting room list"
         })
     }
 

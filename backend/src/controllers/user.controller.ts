@@ -67,8 +67,8 @@ export const signIn = async (req : Request, res : Response) => {
     catch(error : any){
         logger.error(`There was an error while signin process : ${error}`);
         return res.status(500).json({
-            succes : false,
-            message : "Error whie signing in user"
+            success : false,
+            message : error.message || "Error while signing in user"
         })
     }
 }

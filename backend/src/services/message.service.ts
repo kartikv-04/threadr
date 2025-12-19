@@ -1,9 +1,7 @@
-import type { Types } from "mongoose"
 import logger from "../config/logger.js"
 import { serverModel } from "../models/server.model.js"
 import { messageModel } from "../models/message.model.js"
 import type { GetMessages, MessageResponse, SendMessage, SendMessageResponse } from "../types/types.js"
-import { userModel } from "../models/user.model.js"
 import { roomModel } from "../models/room.model.js"
 
 

@@ -29,7 +29,7 @@ export const sendMessage = async (req : Request, res : Response) => {
     catch(error : any){
         return res.status(500).json({
             success : false,
-            message : "Error sending message"
+            message : error.message || "Error sending message"
         })
     }
 }
@@ -37,10 +37,22 @@ export const sendMessage = async (req : Request, res : Response) => {
 // 2. Recieve Message
 export const getMessage = async (req : Request, res : Response) => {
     try {
-        // 1. Destructure req body
-        const{userId, serverId, roomId, page, limit} = req.body
+        // 1. Get parameters from query (RESTful approach for GET requests)
+        const userId = req.query.userId as string;
+        const serverId = req.query.serverId as string;
+        const roomId = req.query.roomId as string;
+        const page = req.query.page ? parseInt(req.query.page as string) : undefined;
+        const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
 
-        // 2. Create data object
+        // 2. Validate required parameters
+        if (!userId || !serverId || !roomId) {
+            return res.status(400).json({
+                success : false,
+                message : "userId, serverId, and roomId are required as query parameters"
+            });
+        }
+
+        // 3. Create data object
         const data = {
             userId, 
             serverId,
@@ -49,10 +61,10 @@ export const getMessage = async (req : Request, res : Response) => {
             limit
         }
 
-        // 3. Receive message
+        // 4. Receive message
         const result = await recieveMessage( data );
 
-        // 4. Send Response
+        // 5. Send Response
         return res.status(200).json({
             success : true,
             message : "Message Fetched Successfully",
@@ -63,7 +75,7 @@ export const getMessage = async (req : Request, res : Response) => {
     catch(error : any){
         return res.status(500).json({
             success : false,
-            message : "Error Receiving Messages"
+            message : error.message || "Error Receiving Messages"
         })
     }
 }

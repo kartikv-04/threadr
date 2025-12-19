@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { createServer, getServerMembers } from "../services/server.service.js";
+import { createServer, getServerMembers, getServerList } from "../services/server.service.js";
 import logger from "../config/logger.js";
 
 // 1. Controller function for New Server
@@ -38,19 +38,28 @@ export const newServer = async (req : Request, res : Response) => {
 // 2. Controller Function For Getting Server Members
 export const serverMember = async (req : Request, res : Response) => {
     try {
-        // 1. Destructure Req Body
-        const {userId, serverId} = req.body;
+        // 1. Get userId and serverId from query parameters (RESTful approach for GET requests)
+        const userId = req.query.userId as string;
+        const serverId = req.query.serverId as string;
 
-        // 2. Create data object to store Variable
+        // 2. Validate required parameters
+        if (!userId || !serverId) {
+            return res.status(400).json({
+                success : false,
+                message : "userId and serverId are required as query parameters"
+            });
+        }
+
+        // 3. Create data object to store Variable
         const data = {
             userId,
             serverId
         }
 
-        // 3. Get Result from Service Function
+        // 4. Get Result from Service Function
         const result = await getServerMembers( data );
 
-        // 4. Send the Result to User
+        // 5. Send the Result to User
         return res.status(200).json({
             success : true,
             message : "Members Fetched Successfully",
@@ -62,7 +71,7 @@ export const serverMember = async (req : Request, res : Response) => {
         logger.error(`Error Fetching the Members for Server : ${error}`);
         return res.status(500).json({
             success : false,
-            message : "Error Fetching Members For These Server!!"
+            message : error.message || "Error Fetching Members For These Server!!"
         })
     }
 }
@@ -70,18 +79,26 @@ export const serverMember = async (req : Request, res : Response) => {
 // 3. Controller Function For Getting All Server Name
 export const serverName = async (req : Request, res : Response) => {
     try {
-        // 1. Destructure the req body
-        const {userId} = req.body;
+        // 1. Get userId from query parameters (RESTful approach for GET requests)
+        const userId = req.query.userId as string;
 
-        // 2. Create data object to store these variable
+        // 2. Validate userId
+        if (!userId) {
+            return res.status(400).json({
+                success : false,
+                message : "userId is required as query parameter"
+            });
+        }
+
+        // 3. Create data object to store these variable
         const data = {
             userId
         }
 
-        // 3. Get All Server names 
-        const result = await getServerMembers( data );
+        // 4. Get All Server names using correct service function
+        const result = await getServerList( data );
 
-        // Return the Response
+        // 5. Return the Response
         return res.status(200).json({
             success : true,
             message : "All Servers Fetched Successfully",
@@ -93,7 +110,7 @@ export const serverName = async (req : Request, res : Response) => {
         logger.error(`Error fetching Server list : ${error}`);
         return res.status(500).json({
             success : false,
-            message : "Error Getting Server list"
+            message : error.message || "Error Getting Server list"
         });
     }
 }
