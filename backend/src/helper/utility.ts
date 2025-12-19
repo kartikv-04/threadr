@@ -2,8 +2,8 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { ACCESS_SECRET, REFRESH_SECRET } from '../config/env.js';
 import type { Types } from 'mongoose';
-import type { PersonalServer, PersonalServerResponse } from '../types/types.js';
 import { serverModel } from '../models/server.model.js';
+import logger from '../config/logger.js';
 
 type TokenPair = {
     accessToken : string,
@@ -28,7 +28,7 @@ export const generateToken = (userId : Types.ObjectId) : TokenPair => {
 
 }
 
-export const newPersonalServer = async ( userId : string) : Promise<string> => {
+export const newPersonalServer = async ( userId : string) : Promise<{name : string}> => {
     try {
         // Check if user if user id is not empty
         if (!userId){
@@ -44,8 +44,11 @@ export const newPersonalServer = async ( userId : string) : Promise<string> => {
         })
 
         // return Created Server's Name only
-        return{
-            serverName : personalNewServer.name
-        }
+        return {name : personalNewServer.name};
+    
+    }
+    catch(err : any){
+        logger.error("Error creating new Server while sign up!!");
+        throw new Error("Personal server could not be created!");
     }
 }

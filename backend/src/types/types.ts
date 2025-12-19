@@ -23,8 +23,7 @@ export type UserResponse = {
 // Signin function type
 export type SigninArg = {
     email : string,
-    password : string,
-    token : string
+    password : string
 }
 
 export type CreateServer = {
@@ -109,4 +108,21 @@ export type PersonalServer = {
 
 export type PersonalServerResponse = {
     serverName : string
+}
+
+export interface GetMessages {
+    userId: string;
+    serverId: string;
+    roomId: string;
+    page?: number;  // Optional: Default to 1
+    limit?: number; // Optional: Default to 50
+}
+
+export interface MessageResponse {
+    messageId: string;
+    content: string;
+    userId: string;
+    username: string; // Added this to display name in UI
+    isEdited: boolean;
+    createdAt: Date;
 }

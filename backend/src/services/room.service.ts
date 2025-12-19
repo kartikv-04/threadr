@@ -74,5 +74,9 @@ export const getRooms = async ( data : getRoomRequest) : Promise<GetRoomResponse
         }
 
     }
+    catch(error : any){
+        logger.error("Error getting room list details");
+        throw new Error("Error getting room list details!");
+    }
     
 }
