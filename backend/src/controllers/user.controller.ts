@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { signin, signup } from "../services/user.service.js";
 import logger from "../config/logger.js";
+import { NODE_ENV } from "../config/env.js";
 
 // Signup Controller
 export const signUp = async (req : Request, res : Response) => {
@@ -20,11 +21,19 @@ export const signUp = async (req : Request, res : Response) => {
         // 3. use signup controleer and get Response
         const result = await signup( data );
 
-        //4. Send Success Response
+        //4. Send Refreshtoken as in cookie
+        res.cookie('refreshToken', result.refreshToken, {
+            httpOnly : true, 
+            secure : NODE_ENV === 'production', //true in production
+            sameSite : 'strict',
+            maxAge : 7 * 24 * 60 * 60 * 1000 // valid till 7days
+        })
+
+        // 5. Send Response to User
         return res.status(201).json({
             success : true,
             message : "User Registered Succesfully",
-            data : result
+            data : result.data
         });
     }
     // Handle Error appropriately
