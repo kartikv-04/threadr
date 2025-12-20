@@ -20,8 +20,8 @@ export const hashPassword = async (password: string): Promise<string> => {
 
 export const generateToken = (userId: Types.ObjectId): TokenPair => {
     // Generate AccessToken and Refrshtoken for user
-    const accessToken = jwt.sign({ userId }, ACCESS_SECRET, { expiresIn: '30m' });
-    const refreshToken = jwt.sign({ userId }, REFRESH_SECRET, { expiresIn: '7d' });
+    const accessToken = jwt.sign({ id: userId }, ACCESS_SECRET, { expiresIn: '15m' });
+    const refreshToken = jwt.sign({ id: userId }, REFRESH_SECRET, { expiresIn: '7d' });
     return {
         accessToken,
         refreshToken
@@ -29,7 +29,7 @@ export const generateToken = (userId: Types.ObjectId): TokenPair => {
 
 }
 
-export const newPersonalServer = async (userId: string): Promise<{serverName : string, roomName : string}> => {
+export const newPersonalServer = async (userId: string): Promise<{ serverName: string, roomName: string }> => {
     try {
         // 1. Check if user if user id is not empty
         if (!userId) {
@@ -46,14 +46,14 @@ export const newPersonalServer = async (userId: string): Promise<{serverName : s
 
         // 3. Create a NEw Room as Welcome OR Notes name
         const personalServerRoom = await roomModel.create({
-            name : "notes",
-            server : personalNewServer._id
+            roomName: "notes",
+            server: personalNewServer._id
         })
 
         // return Created Server's Name only
         return {
-            serverName : personalNewServer.name,
-            roomName : personalServerRoom.roomName
+            serverName: personalNewServer.name,
+            roomName: personalServerRoom.roomName
         };
 
     }

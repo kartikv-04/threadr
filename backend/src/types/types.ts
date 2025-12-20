@@ -12,18 +12,18 @@ export type SignupArg = {
 
 // Return signup function type
 export type UserResponse = {
-    data : {
+    data: {
         id: Types.ObjectId,
         username: string,
         name: string,
         email: string,
         accessToken: string,
         server?: {
-            serverName : string,
-            roomName : string
+            serverName: string,
+            roomName: string
         }
     },
-    refreshToken : string
+    refreshToken: string
 }
 
 // Signin function type
@@ -45,8 +45,8 @@ export type NewServerResponse = {
 }
 
 export type GetMemberRequest = {
-    userId: Types.ObjectId,
-    serverId: Types.ObjectId
+    userId: string,
+    serverId: string
 }
 
 export type GetMemberResponse = {
@@ -55,9 +55,9 @@ export type GetMemberResponse = {
 
 // Request type or creating new Room
 export type NewRoomRequest = {
-    userId: Schema.Types.ObjectId,
+    userId: string,
     roomName: string,
-    serverId: Types.ObjectId
+    serverId: string
 }
 
 // Response type for creating new Room
@@ -75,9 +75,10 @@ export type getRoomRequest = {
 
 // Response Type for GetAllRomm 
 export type GetRoomResponse = {
-    roomId: Types.ObjectId,
-    roomName: string,
-}
+    roomId: Types.ObjectId
+    roomName: string
+    serverId: Schema.Types.ObjectId
+}[]
 
 // Request Type for Sendmessgae
 export type SendMessage = {

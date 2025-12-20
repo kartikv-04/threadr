@@ -5,7 +5,7 @@ import { userModel } from "../models/user.model.js";
 import logger from "../config/logger.js";
 
 
-export const authenticate = async ( req: Request, res: Response, next: NextFunction) => {
+export const authenticate = async (req: Request, res: Response, next: NextFunction) => {
     try {
         // 1️. Get Authorization header
         const authHeader = req.headers.authorization;
@@ -17,12 +17,12 @@ export const authenticate = async ( req: Request, res: Response, next: NextFunct
         }
 
         // 2️.  Extract token
-        const token : any = authHeader.split(" ")[1];
+        const token: any = authHeader.split(" ")[1];
 
         // 3️.  Verify token
-        const decoded = jwt.verify(token, ACCESS_SECRET);
+        const decoded = jwt.verify(token, ACCESS_SECRET) as { id: string };
 
-        if (!decoded || !decoded.id) {
+        if (!decoded) {
             return res.status(401).json({
                 message: "Unauthorized: invalid token",
             });
@@ -38,11 +38,11 @@ export const authenticate = async ( req: Request, res: Response, next: NextFunct
         }
 
         // 5️.  Attach user to request (no password)
-        (req as any).user = user;
+        (req as any).user.id = user._id;
 
         // 6️.  Continue
         next();
-    } catch (error : any) {
+    } catch (error: any) {
         logger.error("Auth middleware error", error);
 
         return res.status(401).json({
