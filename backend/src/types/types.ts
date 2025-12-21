@@ -38,6 +38,7 @@ export type CreateServer = {
 }
 
 export type NewServerResponse = {
+    serverId: string,
     serverName: string,
     members: string[],
     createdBy: string,
@@ -82,9 +83,9 @@ export type GetRoomResponse = {
 
 // Request Type for Sendmessgae
 export type SendMessage = {
-    userId: Types.ObjectId,
-    serverId: Types.ObjectId,
-    roomId: Types.ObjectId,
+    userId: string,
+    serverId: string,
+    roomId: string,
     content: string
 }
 

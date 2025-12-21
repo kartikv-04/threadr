@@ -5,41 +5,47 @@ import cors from 'cors';
 import { Server } from 'socket.io';
 import logger from './config/logger.js';
 import { connectDB } from './config/db.js';
-import indexRouter from '../src/routes/index.route.js'
+import indexRouter from '../src/routes/index.route.js';
+import { socketAuth } from './middleware/socketAuth.js';
+import { socketHandler } from './socket/socket.js';
 
 const PORT = 5000;
 
 // Initializaton and Middleware
 const app = express();
 app.use(cors({
-    origin : "*",
-    methods : ['GET', 'POST']
-
+    origin: "*",
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH']
 }));
 app.use(express.json());
-app.use(express.urlencoded({extended : true}));
+app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/v1', indexRouter);
 
 // Create Server and io
 const server = http.createServer(app);
 const io = new Server(server, {
-    cors : {
-        origin : "*",
-        methods : ["GET, POST"]
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
     }
 });
 
-// start Server
-server.listen(PORT,()=>{
-    logger.info("Server Started")
-    connectDB();
-})
+// Apply socket authentication middleware
+io.use(socketAuth);
 
-// Start connection
-io.on("connection", (socket)=>{
-    logger.info(`User connected with socektif : ${socket}`);
-})
+// Start connection and handle socket events
+io.on("connection", (socket) => {
+    logger.info(`User connected with socketId: ${socket.id}`);
+    socketHandler(io, socket);
+});
+
+// start Server
+server.listen(PORT, () => {
+    logger.info("Server Started");
+    connectDB();
+    logger.info(`Server Running at http://localhost:${PORT}`);
+});
 
 
 

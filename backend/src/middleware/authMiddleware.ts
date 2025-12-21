@@ -20,7 +20,7 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
         const token: any = authHeader.split(" ")[1];
 
         // 3️.  Verify token
-        const decoded = jwt.verify(token, ACCESS_SECRET) as { id: string };
+        const decoded = jwt.verify(token, ACCESS_SECRET) as any;
 
         if (!decoded) {
             return res.status(401).json({
@@ -38,7 +38,7 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
         }
 
         // 5️.  Attach user to request (no password)
-        (req as any).user.id = user._id;
+        (req as any).user = { id: user._id };
 
         // 6️.  Continue
         next();

@@ -12,7 +12,7 @@ export const newRoom = async (req: Request, res: Response) => {
         if (!userId) {
             return res.status(401).json({
                 success: false,
-                message: "Unauthorized : TokenNot Found"
+                message: "Unauthorized : Token Not Found"
             })
         }
 
@@ -33,7 +33,7 @@ export const newRoom = async (req: Request, res: Response) => {
         // 6. Check and validate roomName
         if (!roomName) {
             return res.status(400).json({
-                success: "false",
+                success: false,
                 message: "Room name Not Found, Try again!"
             })
         }
@@ -48,6 +48,8 @@ export const newRoom = async (req: Request, res: Response) => {
         // 8. Creat room
         const result = await createRoom(data);
 
+        logger.info(`New Room Created Successfully : ${data.roomName}`);
+
         // 9. Return new room
         return res.status(201).json({
             success: true,
@@ -57,7 +59,7 @@ export const newRoom = async (req: Request, res: Response) => {
     }
     // Handle Error appropriately
     catch (error: any) {
-        logger.error(`Error creating new room with serverid : ${error}`);
+        logger.error(`Error creating new room with serverId : ${error}`);
         return res.status(500).json({
             success: false,
             message: "Error Creating New Room!!"
@@ -98,6 +100,8 @@ export const getRoom = async (req: Request, res: Response) => {
 
         // 6. Get rooms
         const result = await getRooms(data);
+
+        logger.info("Room list Fetched Successfully");
 
         // 7. Return response
         return res.status(200).json({

@@ -27,6 +27,7 @@ export const createServer = async ( data : CreateServer) : Promise<NewServerResp
 
         // create clean Response JSON
         return {
+            serverId : populatedResponse._id,
             serverName : populatedResponse.name,
             members : populatedResponse.members.map((member : any)=>member.username),
             createdBy : populatedResponse.createdBy.username as string,

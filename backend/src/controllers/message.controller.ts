@@ -1,11 +1,14 @@
 import type { Request, Response } from "express";
 import { recieveMessage, sendMessageService } from "../services/message.service.js";
+import logger from "../config/logger.js";
 
 // 1. Send Message Controller
 export const sendMessage = async (req: Request, res: Response) => {
     try {
         // 1 Destructure req body
-        const { userId, serverId, roomId, content } = req.body;
+        const userId = (req as any)?.user.id;
+        const { serverId, roomId } = req.params;
+        const { content } = req.body;
 
         // 2. Create data object
         const data = {
@@ -13,10 +16,12 @@ export const sendMessage = async (req: Request, res: Response) => {
             serverId,
             roomId,
             content
-        }
+        };
 
         // 3. Send Message
         const result = await sendMessageService(data);
+
+        logger.info("Message Sent Successfully");
 
         // 4. Send Response
         return res.status(201).json({
@@ -38,7 +43,7 @@ export const sendMessage = async (req: Request, res: Response) => {
 export const getMessage = async (req: Request, res: Response) => {
     try {
         // 1. Get parameters from query (RESTful approach for GET requests)
-        const userId = (req as any)?.user._id;
+        const userId = (req as any)?.user.id;
 
         // 2.Check if userID exist
         if (!userId) {
@@ -82,6 +87,8 @@ export const getMessage = async (req: Request, res: Response) => {
 
         // 8. Receive message
         const result = await recieveMessage(data);
+
+        logger.info("Message Recieved Successfully");
 
         // 9. Send Response
         return res.status(200).json({

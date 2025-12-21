@@ -65,11 +65,19 @@ export const signIn = async (req : Request, res : Response) => {
         // 3. get results from signin service function
         const result = await signin( data );
 
-        // 4. Send Response
+        // 4. Send Refreshtoken as in cookie
+        res.cookie('refreshToken', result.refreshToken, {
+            httpOnly : true, 
+            secure : NODE_ENV === 'production', //true in production
+            sameSite : 'strict',
+            maxAge : 7 * 24 * 60 * 60 * 1000 // valid till 7days
+        })
+
+        // 5. Send Response
         return res.status(200).json({
             success : true,
             message : "User Login Successfull",
-            data : result
+            data : result.data
         })
     }
     // Catch error appropriately

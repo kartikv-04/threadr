@@ -46,6 +46,9 @@ export const signup = async (user: SignupArg): Promise<UserResponse> => {
         // Get Personal server created for user
         const userServer = newPersonalServer(id);
 
+        // Log successful
+        logger.info("User Registeered Succssfully");
+
         return {
             data: {
                 id: newUser._id,
@@ -100,6 +103,9 @@ export const signin = async (data: SigninArg): Promise<UserResponse> => {
                 refreshToken: token.refreshToken
             }
         )
+
+        // Log successful Signin Before Sending Data
+        logger.info("User Signed In Successfully");
 
         // Return the essential data 
         return {

@@ -5,8 +5,11 @@ import logger from "../config/logger.js";
 // 1. Controller function for New Server
 export const newServer = async (req: Request, res: Response) => {
     try {
+        // Get user id
+        const userId = (req as any)?.user.id;
+
         // 1. Destructure the req body
-        const { userId, serverName } = req.body
+        const { serverName } = req.body
 
         // 2. Crate data object for these values
         const data = {
@@ -16,6 +19,8 @@ export const newServer = async (req: Request, res: Response) => {
 
         // 3. Create server by using function
         const result = await createServer(data);
+
+        logger.info(`New Server Created : ${data.serverName}`);
 
         // 4. Return result
         return res.status(201).json({
@@ -69,6 +74,8 @@ export const serverMember = async (req: Request, res: Response) => {
         // 6. Get Result from Service Function
         const result = await getServerMembers(data);
 
+        logger.info("Server Membrs Fetched Succssfully");
+
         // 7. Send the Result to User
         return res.status(200).json({
             success: true,
@@ -105,6 +112,8 @@ export const serverName = async (req: Request, res: Response) => {
 
         // 4. Get All Server names using correct service function
         const result = await getServerList(data);
+
+        logger.info("Server Names Fetched Successfully");
 
         // 5. Return the Response
         return res.status(200).json({
