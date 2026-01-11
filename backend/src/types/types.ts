@@ -58,7 +58,7 @@ export type GetMemberResponse = {
 export type NewRoomRequest = {
     userId: string,
     roomName: string,
-    serverId: string
+    serverId: Types.ObjectId
 }
 
 // Response type for creating new Room

@@ -4,7 +4,8 @@ import { ACCESS_SECRET, REFRESH_SECRET } from '../config/env.js';
 import type { Types } from 'mongoose';
 import { serverModel } from '../models/server.model.js';
 import logger from '../config/logger.js';
-import { roomModel } from '../models/room.model.js';
+import { createRoom } from '../services/room.service.js';
+import type { NewRoomRequest } from '../types/types.js';
 
 type TokenPair = {
     accessToken: string,
@@ -31,12 +32,12 @@ export const generateToken = (userId: Types.ObjectId): TokenPair => {
 
 export const newPersonalServer = async (userId: string): Promise<{ serverName: string, roomName: string }> => {
     try {
-        // 1. Check if user if user id is not empty
+        // Check if user if user id is not empty
         if (!userId) {
             throw new Error("user id Not provided!");
         }
 
-        // 2. Create a default Personal Welcome Server with Welcome room in it
+        // Create a default Personal Welcome Server with Welcome room in it
         const personalNewServer = await serverModel.create({
             name: "Welcome",
             createdBy: userId,
@@ -44,16 +45,22 @@ export const newPersonalServer = async (userId: string): Promise<{ serverName: s
             isPersonal: true,
         })
 
-        // 3. Create a NEw Room as Welcome OR Notes name
-        const personalServerRoom = await roomModel.create({
-            roomName: "notes",
-            server: personalNewServer._id
-        })
+        logger.debug(`Personal Server has been created for user : ${userId}`);
+
+        // Create a New Room as genera name
+        const newRoom : NewRoomRequest = {
+            userId : userId,
+            roomName : "general",
+            serverId : personalNewServer._id
+        }
+        const firstRoom = createRoom(newRoom);
+
+        logger.debug(`Welcome room has been created for user : ${userId}`);
 
         // return Created Server's Name only
         return {
             serverName: personalNewServer.name,
-            roomName: personalServerRoom.roomName
+            roomName: (await firstRoom).roomName
         };
 
     }
