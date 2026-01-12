@@ -3,25 +3,31 @@ import type { Request, Response } from "express";
 import { createRoom, getRooms } from "../services/room.service.js";
 import { asyncHandler } from "../helper/asyncHandler.js";
 import { NewRoom, GetRoomListSchema } from "../validator/zod.js";
+import { ValidationError } from "../helper/errorClass.js";
 
-// 1. Create a room
+//  Create a room
 export const newRoom = asyncHandler(async (req: Request, res: Response) => {
-    // 1. Get userId
+    //  Get userId
     const userId = (req as any)?.user.id;
 
-    // 2. Get serverId and roomName
+    //  Get serverId and roomName
     const { serverId } = req.params;
     const roomName = req.body.roomName;
 
-    // 3. Validation
-    const validatedData = NewRoom.parse({ userId, serverId, roomName });
+    //  Validation
+    const validatedData = NewRoom.safeParse({ userId, serverId, roomName });
 
-    // 4. Creat room
-    const result = await createRoom(validatedData as any);
+    // Handle Error
+    if(!validatedData.success){
+            throw new ValidationError("Validation Failed!")
+        }
 
-    logger.info(`New Room Created Successfully : ${validatedData.roomName}`);
+    //  Creat room
+    const result = await createRoom(validatedData.data as any);
 
-    // 5. Return new room
+    logger.info(`New Room Created Successfully : ${result.roomName}`);
+
+    //  Return new room
     return res.status(201).json({
         success: true,
         message: "New Room created Successfully",
@@ -29,21 +35,26 @@ export const newRoom = asyncHandler(async (req: Request, res: Response) => {
     })
 });
 
-// 2. Get Room List
+//  Get Room List
 export const getRoom = asyncHandler(async (req: Request, res: Response) => {
-    // 1. Get userId 
+    //  Get userId 
     const userId = (req as any)?.user.id;
     const { serverId } = req.params
 
-    // 2. Validate
-    const validatedData = GetRoomListSchema.parse({ userId, serverId });
+    //  Validate
+    const validatedData = GetRoomListSchema.safeParse({ userId, serverId });
 
-    // 3. Get rooms
-    const result = await getRooms(validatedData);
+    // Handle Error
+    if(!validatedData.success){
+        throw new ValidationError("Validation Failed!")
+    }
+
+    //  Get rooms
+    const result = await getRooms(validatedData.data);
 
     logger.info("Room list Fetched Successfully");
 
-    // 4. Return response
+    //  Return response
     return res.status(200).json({
         success: true,
         message: "Room Fetched Successfully",
