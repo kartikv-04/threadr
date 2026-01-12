@@ -7,6 +7,7 @@ import logger from '../config/logger.js';
 import { createRoom } from '../services/room.service.js';
 import type { NewRoomRequest } from '../types/types.js';
 
+
 type TokenPair = {
     accessToken: string,
     refreshToken: string
@@ -47,20 +48,24 @@ export const newPersonalServer = async (userId: string): Promise<{ serverName: s
 
         logger.debug(`Personal Server has been created for user : ${userId}`);
 
-        // Create a New Room as genera name
+        // Create a New Room as general name
         const newRoom : NewRoomRequest = {
             userId : userId,
             roomName : "general",
             serverId : personalNewServer._id
         }
-        const firstRoom = createRoom(newRoom);
+        const firstRoom = await createRoom(newRoom);
+        logger.debug("room was crated")
 
-        logger.debug(`Welcome room has been created for user : ${userId}`);
+        if(!firstRoom){
+            logger.info("Error creatig New Room for Server")
+            throw new Error("Error in creating new room for server");
+        }
 
         // return Created Server's Name only
         return {
             serverName: personalNewServer.name,
-            roomName: (await firstRoom).roomName
+            roomName: (firstRoom).roomName
         };
 
     }

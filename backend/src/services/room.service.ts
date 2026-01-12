@@ -29,6 +29,7 @@ export const createRoom = async (data: NewRoomRequest): Promise<ReturnNewRoom> =
     // Create new Room for Server
     const newRoom = await roomModel.create({
         roomName: data.roomName,
+        createdBy : data.userId,
         server: data.serverId
     })
 
