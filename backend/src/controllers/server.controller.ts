@@ -1,134 +1,73 @@
 import type { Request, Response } from "express";
 import { createServer, getServerMembers, getServerList } from "../services/server.service.js";
 import logger from "../config/logger.js";
+import { asyncHandler } from "../helper/asyncHandler.js";
+import { NewServer, GetServerMemberSchema, GetServerListSchema } from "../validator/zod.js";
 
 // 1. Controller function for New Server
-export const newServer = async (req: Request, res: Response) => {
-    try {
-        // Get user id
-        const userId = (req as any)?.user.id;
+export const newServer = asyncHandler(async (req: Request, res: Response) => {
+    // Get user id
+    const userId = (req as any)?.user.id;
 
-        // 1. Destructure the req body
-        const { serverName } = req.body
+    // 1. Destructure the req body
+    const { serverName } = req.body
 
-        // 2. Crate data object for these values
-        const data = {
-            userId,
-            serverName
-        }
+    // 2. Validate using Zod
+    const validatedData = NewServer.parse({ userId, serverName });
 
-        // 3. Create server by using function
-        const result = await createServer(data);
+    // 3. Create server by using function
+    const result = await createServer(validatedData as any);
 
-        logger.info(`New Server Created : ${data.serverName}`);
+    logger.info(`New Server Created : ${validatedData.serverName}`);
 
-        // 4. Return result
-        return res.status(201).json({
-            success: true,
-            message: "NewServer Created Successfully",
-            data: result
-        })
-
-    }
-    // Handle error appropriately
-    catch (error: any) {
-        logger.error(`Error creating New Server : ${error}`);
-        return res.status(500).json({
-            success: false,
-            message: "Error creating New Server"
-        })
-    }
-}
+    // 4. Return result
+    return res.status(201).json({
+        success: true,
+        message: "NewServer Created Successfully",
+        data: result
+    })
+});
 
 // 2. Controller Function For Getting Server Members
-export const serverMember = async (req: Request, res: Response) => {
-    try {
-        // 1. Get userId 
-        const userId = (req as any)?.user.id;
+export const serverMember = asyncHandler(async (req: Request, res: Response) => {
+    // 1. Get userId 
+    const userId = (req as any)?.user.id;
+    const { serverId } = req.params;
 
-        // 2. Validate userId 
-        if (!userId) {
-            return res.status(401).json({
-                success: false,
-                message: "Unauthorized : Token not Found"
-            });
-        }
+    // 2. Validate
+    const validatedData = GetServerMemberSchema.parse({ userId, serverId });
 
-        // 3. Get serverId
-        const { serverId } = req.params;
+    // 3. Get Result from Service Function
+    const result = await getServerMembers(validatedData);
 
-        // 4. Validate serverId
-        if (!serverId) {
-            return res.status(400).json({
-                success: false,
-                message: "serverId is required in URL Path"
-            });
-        }
+    logger.info("Server Membrs Fetched Succssfully");
 
-        // 5. Create data object to store Variable
-        const data = {
-            userId,
-            serverId
-        }
-
-        // 6. Get Result from Service Function
-        const result = await getServerMembers(data);
-
-        logger.info("Server Membrs Fetched Succssfully");
-
-        // 7. Send the Result to User
-        return res.status(200).json({
-            success: true,
-            message: "Members Fetched Successfully",
-            data: result
-        })
-    }
-    // Handle Error appropriately
-    catch (error: any) {
-        logger.error(`Error Fetching the Members for Server : ${error}`);
-        return res.status(500).json({
-            success: false,
-            message: error.message || "Error Fetching Members For These Server!!"
-        })
-    }
-}
+    // 4. Send the Result to User
+    return res.status(200).json({
+        success: true,
+        message: "Members Fetched Successfully",
+        data: result
+    })
+});
 
 // 3. Controller Function For Getting All Server Name
-export const serverName = async (req: Request, res: Response) => {
-    try {
-        // 1. Get userId 
-        const userId = (req as any)?.user.id
+export const serverName = asyncHandler(async (req: Request, res: Response) => {
+    // 1. Get userId 
+    const userId = (req as any)?.user.id
 
-        // 2. Validate userId
-        if (!userId) {
-            return res.status(400).json({
-                success: false,
-                message: "userId is required as query parameter"
-            });
-        }
+    // 2. Validate userId
+    const validatedData = GetServerListSchema.parse({ userId });
 
-        // 3. Create data object to store these variable
-        const data = { userId };
+    // 3. Get All Server names using correct service function
+    const result = await getServerList(validatedData as any);
 
-        // 4. Get All Server names using correct service function
-        const result = await getServerList(data);
+    logger.info("Server Names Fetched Successfully");
 
-        logger.info("Server Names Fetched Successfully");
-
-        // 5. Return the Response
-        return res.status(200).json({
-            success: true,
-            message: "All Servers Fetched Successfully",
-            data: result
-        })
-    }
-    // Handle the Error appropriately
-    catch (error: any) {
-        logger.error(`Error fetching Server list : ${error}`);
-        return res.status(500).json({
-            success: false,
-            message: error.message || "Error Getting Server list"
-        });
-    }
-}
+    // 4. Return the Response
+    return res.status(200).json({
+        success: true,
+        message: "All Servers Fetched Successfully",
+        data: result
+    })
+});
 

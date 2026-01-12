@@ -1,107 +1,73 @@
 import type { Request, Response } from "express";
 import { recieveMessage, sendMessageService } from "../services/message.service.js";
 import logger from "../config/logger.js";
+import { asyncHandler } from "../helper/asyncHandler.js";
+import { RecieveMessage, SendMessageSchema } from "../validator/zod.js";
+import { z } from "zod";
 
 // 1. Send Message Controller
-export const sendMessage = async (req: Request, res: Response) => {
-    try {
-        // 1 Destructure req body
-        const userId = (req as any)?.user.id;
-        const { serverId, roomId } = req.params;
-        const { content } = req.body;
+export const sendMessage = asyncHandler(async (req: Request, res: Response) => {
+    // 1 Destructure req body
+    const userId = (req as any)?.user.id;
+    const { serverId, roomId } = req.params;
+    const { content } = req.body;
 
-        // 2. Create data object
-        const data = {
-            userId,
-            serverId,
-            roomId,
-            content
-        };
+    // 2. Validate
+    const validatedData = SendMessageSchema.parse({ userId, serverId, roomId, content });
 
-        // 3. Send Message
-        const result = await sendMessageService(data);
+    // 3. Send Message
+    const result = await sendMessageService(validatedData);
 
-        logger.info("Message Sent Successfully");
+    logger.info("Message Sent Successfully");
 
-        // 4. Send Response
-        return res.status(201).json({
-            success: true,
-            message: "New message created and sended successfully",
-            data: result
-        })
-    }
-    // Handle error using catch
-    catch (error: any) {
-        return res.status(500).json({
-            success: false,
-            message: error.message || "Error sending message"
-        })
-    }
-}
+    // 4. Send Response
+    return res.status(201).json({
+        success: true,
+        message: "New message created and sended successfully",
+        data: result
+    })
+});
 
 // 2. Recieve Message
-export const getMessage = async (req: Request, res: Response) => {
-    try {
-        // 1. Get parameters from query (RESTful approach for GET requests)
-        const userId = (req as any)?.user.id;
+export const getMessage = asyncHandler(async (req: Request, res: Response) => {
+    // 1. Get parameters from query (RESTful approach for GET requests)
+    const userId = (req as any)?.user.id;
 
-        // 2.Check if userID exist
-        if (!userId) {
-            return res.status(401).json({
-                success: false,
-                message: "Unauthorized : User not Authenticated"
-            });
-        }
+    // 2.Get serverId and roomId from params
+    const { serverId, roomId } = req.params;
 
-        // 3. Get serverId and roomId from params
-        const { serverId, roomId } = req.params;
+    // 3. Validate Basic Fields
+    const validatedData = RecieveMessage.parse({ userId, serverId, roomId });
 
-        // 4. Validate serverId and roomId
-        if (!serverId || !roomId) {
-            return res.status(400).json({
-                success: false,
-                message: "serevrId and roomId are required in URL Path!!"
-            });
-        }
+    // 4. Get page and limit parameter from and handle pagination
+    const page = req.query.page ? parseInt(req.query.page as string) : 1;
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
 
-        // 5. Get page and limit parameter from and handle pagination
-        const page = req.query.page ? parseInt(req.query.page as string) : 0;
-        const limit = req.query.limit ? parseInt(req.query.limit as string) : 0;
-
-        // 6. Ensure safety and negative value by early findings
-        if (page < 1 || limit < 1 || limit > 100) { //max limit: 100
-            return res.status(400).json({
-                success: false,
-                message: "Invalid Parameters"
-            })
-        }
-
-        // 7. Create data object
-        const data = {
-            userId,
-            serverId,
-            roomId,
-            page,
-            limit
-        }
-
-        // 8. Receive message
-        const result = await recieveMessage(data);
-
-        logger.info("Message Recieved Successfully");
-
-        // 9. Send Response
-        return res.status(200).json({
-            success: true,
-            message: "Message Fetched Successfully",
-            data: result
-        })
+    // 5. Ensure safety and negative value by early findings
+    if (page < 1 || limit < 1 || limit > 100) { //max limit: 100
+        throw new z.ZodError([{
+            path: ["page"],
+            message: "Invalid page or limit parameters",
+            code: "custom"
+        }]);
     }
-    // Handle error
-    catch (error: any) {
-        return res.status(500).json({
-            success: false,
-            message: error.message || "Error Receiving Messages"
-        })
+
+    // 6. Create data object
+    const data = {
+        ...validatedData,
+        page,
+        limit
     }
-}
+
+    // 7. Receive message
+    const result = await recieveMessage(data);
+
+    logger.info("Message Recieved Successfully");
+
+    // 8. Send Response
+    return res.status(200).json({
+        success: true,
+        message: "Message Fetched Successfully",
+        data: result
+    })
+});
