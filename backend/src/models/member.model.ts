@@ -5,6 +5,7 @@ interface Member extends Document {
     server : Schema.Types.ObjectId,
     user : Schema.Types.ObjectId,
     role : string[],
+    avatar : string,
     joinedAt : Date,
     isBanned : boolean,
 }
@@ -13,7 +14,7 @@ interface Member extends Document {
 const memberSchema = new mongoose.Schema({
     server : {
         type : Schema.Types.ObjectId,
-        ref : "server",
+        ref : "Server",
         required : [true, "Server reference is required"],
         index : true
     },
@@ -25,15 +26,19 @@ const memberSchema = new mongoose.Schema({
     },
     role : [{
         type : String,
-        enum : ["admin, memeber"],
+        enum : ["admin", "member"],
         required : true,
-        default : "memeber"
+        default : "member"
     }],
+    avatar : {
+        type : String,
+        default : null
+    },
     isBanned : {
         type : Boolean,
         default : false
     }
-}, {timestamps : {createdAt : 'joinedAt', updatedAt : 'false'}});
+}, {timestamps : {createdAt : 'joinedAt', updatedAt : false}});
 
 // Compound index
 memberSchema.index({ server : 1, user : 1}, {unique : true});

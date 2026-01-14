@@ -42,7 +42,7 @@ export const signUp = asyncHandler(async (req: Request, res: Response) => {
     return res.status(201).json({
         success: true,
         message: "User Registered Succesfully",
-        data: result.data
+        data: result
     });
 
 });
@@ -81,6 +81,6 @@ export const signIn = asyncHandler(async (req: Request, res: Response) => {
     return res.status(200).json({
         success: true,
         message: "User Login Successfull",
-        data: result.data
+        data: result
     })
 });

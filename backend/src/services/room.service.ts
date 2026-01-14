@@ -1,12 +1,12 @@
 import logger from "../config/logger.js"
 import { roomModel } from "../models/room.model.js"
 import { serverModel } from "../models/server.model.js"
-import type { NewRoomRequest, ReturnNewRoom, getRoomRequest, GetRoomResponse } from "../types/types.js"
+import type { NewRoomRequest, NewRoomResponse, GetRoomRequest, GetRoomResponse } from "../types/types.js"
 import { NotFoundError, UnauthorizedError, ValidationError } from "../helper/errorClass.js";
 
 
 
-export const createRoom = async (data: NewRoomRequest): Promise<ReturnNewRoom> => {
+export const createRoom = async (data: NewRoomRequest): Promise<NewRoomResponse> => {
 
     // Validate and check incoming details
     if (!data.userId || !data.roomName || !data.serverId) {
@@ -30,7 +30,8 @@ export const createRoom = async (data: NewRoomRequest): Promise<ReturnNewRoom> =
     const newRoom = await roomModel.create({
         roomName: data.roomName,
         createdBy : data.userId,
-        server: data.serverId
+        server: data.serverId,
+        createdAt : new Date()
     })
 
     // Log new Room creation
@@ -38,13 +39,14 @@ export const createRoom = async (data: NewRoomRequest): Promise<ReturnNewRoom> =
 
     // Return essentials details for room creation
     return {
-        roomId: newRoom._id,
+        roomId: newRoom._id.toString(),
         roomName: newRoom.roomName,
-        serverId: newRoom.server
+        serverId: data.serverId.toString(),
+        createdAt : newRoom.createdAt
     }
 }
 
-export const getRooms = async (data: getRoomRequest): Promise<GetRoomResponse> => {
+export const getRooms = async (data: GetRoomRequest): Promise<GetRoomResponse> => {
     // Check if user is part of server who trying to get room of perticular server?
     const userServer = await serverModel.findById(data.serverId);
 
@@ -73,12 +75,14 @@ export const getRooms = async (data: getRoomRequest): Promise<GetRoomResponse> =
 
     // Return All details with room name, and id and etc...
     const allRooms = getRooms.map((room) => ({
-        roomId: room._id,
+        roomId: room._id.toString(),
         roomName: room.roomName,
-        serverId: room.server
+        isDefault : room.isDefault || false
     }));
 
     // Return All Room Details
-    return allRooms;
+    return {
+        rooms : allRooms
+    };
 
 }

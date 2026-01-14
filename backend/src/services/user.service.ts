@@ -1,13 +1,14 @@
 import { userModel } from '../models/user.model.js';
 import { generateToken, hashPassword, newPersonalServer } from '../helper/utility.js';
 import logger from '../config/logger.js';
-import type { SignupArg, UserResponse, SigninArg, } from '../types/types.js';
+import type { SignupRequest, SigninResponse, SignupResponse, SigninRequest, } from '../types/types.js';
 import bcrypt from 'bcryptjs';
 import { ConflictError, UnauthorizedError } from '../helper/errorClass.js';
 
 
 // Signup Service function
-export const signup = async (user: SignupArg): Promise<UserResponse> => {
+export const signup = async (user: SignupRequest): Promise<SignupResponse> => {
+    
     // Check if user already exist
     const userExist = await userModel.findOne({ email: user.email });
     if (userExist) {
@@ -37,30 +38,32 @@ export const signup = async (user: SignupArg): Promise<UserResponse> => {
     const id = newUser._id.toString();
 
     // Get Personal server created for user
-    const userServer = newPersonalServer(id);
+    const userServer = await newPersonalServer(id);
 
     // Log successful
-    logger.info("User Registeered Succssfully");
+    logger.info("User Registered Succssfully");
 
     return {
-        data: {
-            id: newUser._id,
+        user: {
+            id: newUser._id.toString(),
             username: newUser.username,
             name: newUser.name,
             email: newUser.email,
             accessToken: token.accessToken,
-            server: {
-                serverName: (await userServer).serverName,
-                roomName: (await userServer).roomName
-            }
         },
+        server: {
+                serverId: userServer.serverId,
+                roomId: userServer.roomId, 
+                serverName: userServer.serverName,
+                roomName: userServer.roomName
+            },
         refreshToken: token.refreshToken
     }
 
 }
 
 // Signin Service Function
-export const signin = async (data: SigninArg): Promise<UserResponse> => {
+export const signin = async (data: SigninRequest): Promise<SigninResponse> => {
     // Check user exist or not
     const userExist = await userModel.findOne({ email: data.email }).select('+password');
     if (!userExist) {
@@ -90,8 +93,8 @@ export const signin = async (data: SigninArg): Promise<UserResponse> => {
 
     // Return the essential data 
     return {
-        data: {
-            id: userExist._id,
+        user: {
+            id: userExist._id.toString(),
             username: userExist.username,
             name: userExist.name,
             email: userExist.email,

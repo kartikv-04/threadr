@@ -8,22 +8,27 @@ import { ValidationError } from "../helper/errorClass.js";
 //  Create a room
 export const newRoom = asyncHandler(async (req: Request, res: Response) => {
     //  Get userId
-    const userId = (req as any)?.user.id;
+    const userId = (req as any)?.user.id.toString();
 
     //  Get serverId and roomName
     const { serverId } = req.params;
     const roomName = req.body.roomName;
+
+    logger.debug(`userId : ${userId}`);
+    logger.debug(`serverId : ${serverId}`);
+    logger.debug(`roomName : ${roomName}`);
 
     //  Validation
     const validatedData = NewRoom.safeParse({ userId, serverId, roomName });
 
     // Handle Error
     if(!validatedData.success){
+            logger.error(validatedData.error, "Validation error");
             throw new ValidationError("Validation Failed!")
         }
 
     //  Creat room
-    const result = await createRoom(validatedData.data as any);
+    const result = await createRoom(validatedData.data);
 
     logger.info(`New Room Created Successfully : ${result.roomName}`);
 

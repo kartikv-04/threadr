@@ -9,6 +9,7 @@ interface Server extends Document {
     inviteLink?: string;
     createdAt: Date;
     updatedAt: Date;
+    icon : string
 }
 
 // Schema for server model
@@ -26,10 +27,6 @@ const serverSchema = new mongoose.Schema<Server>({
         required: [true, 'Creator reference is required'],
         immutable: true  // Creator cannot be changed after creation
     },
-    members: [{
-        type: Schema.Types.ObjectId,
-        ref: "User"
-    }],
     isPersonal: {
         type: Boolean,
         default: true
@@ -38,19 +35,13 @@ const serverSchema = new mongoose.Schema<Server>({
         type: String,
         unique: true,
         sparse: true
+    },
+    icon : {
+        type : String,
+        default : null
     }
 }, { timestamps: true });
 
-// Index for querying servers by member
-serverSchema.index({ members: 1 });
-
-// Ensure creator is in members array (middleware)
-serverSchema.pre('save', function(next) {
-    if (this.isNew && !this.members.includes(this.createdBy)) {
-        this.members.push(this.createdBy);
-    }
-    next();
-});
 
 // Export server model
 export const serverModel = mongoose.model<Server>("Server", serverSchema);

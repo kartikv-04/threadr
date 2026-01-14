@@ -8,7 +8,7 @@ import { ValidationError } from "../helper/errorClass.js";
 // 1. Controller function for New Server
 export const newServer = asyncHandler(async (req: Request, res: Response) => {
     // Get user id
-    const userId = (req as any)?.user.id;
+    const userId = (req as any)?.user.id.toString();
 
     //  Destructure the req body
     const { serverName } = req.body

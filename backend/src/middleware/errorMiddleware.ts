@@ -25,6 +25,16 @@ export const errorHandler = (
         });
     }
 
+    // Handle Mongoose Cast Errors (Invalid ObjectId)
+    if (err.name === 'CastError') {
+        logger.warn(`Invalid ID format: ${err.path} = ${err.value}`);
+        
+        return res.status(400).json({
+            success: false,
+            message: `Invalid format for field: ${err.path}`,
+        });
+    }
+
     // Handle custom AppError
     if (err instanceof AppError) {
         // Log based on severity

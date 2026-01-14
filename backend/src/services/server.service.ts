@@ -1,12 +1,13 @@
-import type { CreateServer, NewServerResponse, GetMemberRequest, GetMemberResponse, GetServerType, GetServerResponse } from "../types/types.js";
+import type { CreateServerRequest, NewServerResponse, GetMemberRequest, GetMemberResponse, GetServerRequest, GetServerResponse } from "../types/types.js";
 import { serverModel } from "../models/server.model.js"
 import logger from "../config/logger.js"
 import { NotFoundError, UnauthorizedError, ValidationError } from "../helper/errorClass.js";
+import { memberModel } from "../models/member.model.js";
 
 
-export const createServer = async (data: CreateServer): Promise<NewServerResponse> => {
+export const createServer = async (data: CreateServerRequest): Promise<NewServerResponse> => {
     // Validate incoming details
-    if (!data.userId || !data.serverName?.trim) {
+    if (!data.userId || !data.serverName?.trim()) {
         logger.warn("Server name and userid are required!!");
         throw new ValidationError("Server and userid are required!");
     }
@@ -15,12 +16,34 @@ export const createServer = async (data: CreateServer): Promise<NewServerRespons
     const newServer = await serverModel.create({
         name: data.serverName,
         createdBy: data.userId,
-        members: [data.userId]
     })
 
-    // Populate createdBy and members in one
-    await newServer.populate("createdBy", "username");
-    await newServer.populate("members", "username");
+    if (!newServer) {
+        logger.error("Error in create server function");
+        throw new Error("Error in server function")
+    }
+
+    logger.debug("New Server has been created by user");
+
+    try {
+        // Add user to member model
+        const newMember = await memberModel.create({
+            server: newServer._id,
+            user: data.userId,
+            role: "admin",
+            isBanned: false
+        })
+
+        logger.debug("New Member is created");
+
+        // Populate createdBy and members in one
+        await newServer.populate("createdBy", "username");
+
+    }
+    catch(err : any){
+        logger.error("Error in member model", err);
+        throw new Error("Error in memebr creartion", err)
+    }
 
     // Create build response for as any type for typescript
     const populatedResponse = newServer as any;
@@ -29,7 +52,6 @@ export const createServer = async (data: CreateServer): Promise<NewServerRespons
     return {
         serverId: populatedResponse._id,
         serverName: populatedResponse.name,
-        members: populatedResponse.members.map((member: any) => member.username),
         createdBy: populatedResponse.createdBy.username as string,
         createdAt: populatedResponse.createdAt
     };
@@ -42,7 +64,6 @@ export const getServerMembers = async (data: GetMemberRequest): Promise<GetMembe
         throw new ValidationError("Invalid request details");
     }
 
-    // Find the server
     const findServer = await serverModel.findById(data.serverId);
     if (!findServer) {
         logger.warn(`Server not found: ${data.serverId}`);
@@ -68,7 +89,7 @@ export const getServerMembers = async (data: GetMemberRequest): Promise<GetMembe
     }
 }
 
-export const getServerList = async (data: GetServerType): Promise<GetServerResponse> => {
+export const getServerList = async (data: GetServerRequest): Promise<GetServerResponse> => {
     // Check and validate data
     if (!data.userId) {
         logger.error("Userid not provided!!");
@@ -89,11 +110,15 @@ export const getServerList = async (data: GetServerType): Promise<GetServerRespo
     // create formatted response strucutre
     const formattedServers = findServer.map(server => ({
         serverId: server._id.toString(),
-        name: server.name
+        name: server.name,
+        icon: server.icon
+
     }));
 
     // Return the populated server
-    return { findServer: formattedServers };
+    return {
+        servers: formattedServers
+    };
 
 
 
