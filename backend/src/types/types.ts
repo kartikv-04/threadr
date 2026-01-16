@@ -128,7 +128,6 @@ export type GetRoomResponse = {
     rooms: {
         roomId: string;
         roomName: string;
-        isDefault: boolean;
     }[];
 }
 

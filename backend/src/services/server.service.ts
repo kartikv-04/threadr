@@ -26,25 +26,18 @@ export const createServer = async (data: CreateServerRequest): Promise<NewServer
 
     logger.debug("New Server has been created by user");
 
-    try {
-        // Add user to member model
-        const newMember = await memberModel.create({
-            server: newServer._id,
-            user: data.userId,
-            role: "admin",
-            isBanned: false
-        })
+    // Add user to member model
+    const newMember = await memberModel.create({
+        server: newServer._id,
+        user: data.userId,
+        role: "admin",
+        isBanned: false
+    })
 
-        logger.debug("New Member is created");
+    logger.debug("New Member is created");
 
-        // Populate createdBy and members in one
-        await newServer.populate("createdBy", "username");
-
-    }
-    catch (err: any) {
-        logger.error("Error in member model", err);
-        throw new Error("Error in memebr creartion", err)
-    }
+    // Populate createdBy and members in one
+    await newServer.populate("createdBy", "username");
 
     // Create build response for as any type for typescript
     const populatedResponse = newServer as any;
@@ -58,38 +51,6 @@ export const createServer = async (data: CreateServerRequest): Promise<NewServer
     };
 }
 
-export const getServerMembers = async (data: GetMemberRequest): Promise<GetMemberResponse> => {
-    // Validate incoming fields
-    if (!data.userId || !data.serverId) {
-        logger.warn("Missing userId or serverId in getServerMembers");
-        throw new ValidationError("Invalid request details");
-    }
-
-    const findServer = await serverModel.findById(data.serverId);
-    if (!findServer) {
-        logger.warn(`Server not found: ${data.serverId}`);
-        throw new NotFoundError("Server not found");
-    }
-
-    // check if user is itself part of server?
-    const ifMember = findServer?.members.some(member => member.toString() === data.userId);
-
-    if (!ifMember) {
-        logger.warn(`Unauthorized access attempt by user ${data.userId} to server ${data.serverId}`);
-        throw new UnauthorizedError("Unauthorized: You are not a member of this server");
-    }
-
-    // Populate serverl model to get all memebrs username
-    await findServer?.populate("members", "username");
-
-    const populateResponse = findServer as any;
-
-    // Return with correct Json format and details
-    return {
-        members: populateResponse.members.map((user: any) => user.username)
-    }
-}
-
 export const getServerList = async (data: GetServerRequest): Promise<GetServerResponse> => {
     // Check and validate data
     if (!data.userId) {
@@ -98,31 +59,26 @@ export const getServerList = async (data: GetServerRequest): Promise<GetServerRe
     }
 
     // Find Server of which user is part of
-    const findServer = await serverModel
-        .find({ members: data.userId })
-        .select("._id name")
-        .lean();
+    const serverArray = await memberModel
+        .find({ user: data.userId })
+        .populate("server", "name icon")
+        .exec();
 
-    if (!findServer) {
+    if (serverArray.length === 0) {
         logger.info("user is not yet part of any server");
         throw new NotFoundError("No server found!");
     }
+    
+    const formatedServer = serverArray.map( list => {
+        const server = list.server as any as { name: string; icon: string };
+             return {
+                name: server.name,
+                icon: server.icon
+            };
+        
+    })
 
-    // create formatted response strucutre
-    const formattedServers = findServer.map(server => ({
-        serverId: server._id.toString(),
-        name: server.name,
-        icon: server.icon
-
-    }));
-
-    // Return the populated server
-    return {
-        servers: formattedServers
-    };
-
-
-
+    return formatedServer as any;
 }
 
 export const deleteServers = async (data: DeleteServerReqest): Promise<void> => {

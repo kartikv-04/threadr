@@ -30,9 +30,9 @@ export const createRoom = async (data: NewRoomRequest): Promise<NewRoomResponse>
     // Create new Room for Server
     const newRoom = await roomModel.create({
         roomName: data.roomName,
-        createdBy : data.userId,
+        createdBy: data.userId,
         server: data.serverId,
-        createdAt : new Date()
+        createdAt: new Date()
     })
 
     // Log new Room creation
@@ -43,48 +43,39 @@ export const createRoom = async (data: NewRoomRequest): Promise<NewRoomResponse>
         roomId: newRoom._id.toString(),
         roomName: newRoom.roomName,
         serverId: data.serverId.toString(),
-        createdAt : newRoom.createdAt
+        createdAt: newRoom.createdAt
     }
 }
 
 export const getRooms = async (data: GetRoomRequest): Promise<GetRoomResponse> => {
-    // Check if user is part of server who trying to get room of perticular server?
-    const userServer = await serverModel.findById(data.serverId);
-
-    if (!userServer) {
-        throw new NotFoundError("Server Not Found");
+    // Check fields if are empty
+    if (!data.userId || !data.serverId) {
+        throw new ValidationError("All fields are required");
     }
 
-    // Check all member userid to ensure user is admin or member of server!
-    const isMember = userServer.members.some((id) => id.toString() == data.userId);
-
+    // Check if user is member or not
+    const isMember = await memberModel.findOne({ user: data.userId });
     if (!isMember) {
-        logger.error("You are not allowed to get room list");
-        throw new UnauthorizedError("you are not allowed to get rooms list");
-    }
-
-    // Now get all rooms whihc are part of these server
-    const getRooms = await roomModel.find({ server: data.serverId });
-
-    if (!getRooms || getRooms.length === 0) {
-        logger.info("No Room was found for these Server!");
-        throw new NotFoundError("No Room was found for these Server!");
-    }
-
-    // Log Successfull that Rooms Found
-    logger.info("Rooms found successfully");
-
-    // Return All details with room name, and id and etc...
-    const allRooms = getRooms.map((room) => ({
-        roomId: room._id.toString(),
-        roomName: room.roomName,
-        isDefault : room.isDefault || false
-    }));
-
-    // Return All Room Details
-    return {
-        rooms : allRooms
+        throw new NotFoundError("User npt Found");
     };
+
+    // find all rooms for these server
+    let findRooms;
+    const findRoomsForUser = await roomModel.find({ server: data.userId, isPrivate: false });  //returns all public rooms
+    const findRoomsForAdmin = await roomModel.find({ server: data.userId });  //returns all rooms
+
+    // if user is admin return all rooms if not return only public rooms
+    isMember.role.includes("admin") ? findRooms = findRoomsForAdmin : findRooms = findRoomsForUser;
+
+    const roomList = findRooms.map(room => { 
+    const rooms = room as any as {roomId : string, roomName : string};
+    return {
+        roomId: room._id.toString(),
+        roomName: room.roomName
+    }
+    });
+
+    return { rooms: roomList };
 
 }
 
@@ -95,7 +86,7 @@ export const deleteRoom = async (data: DeleteRoomRequest): Promise<void> => {
     };
 
     // Find associated user in member model
-    const findMember = await memberModel.findOne({ user: data.userId, server : data.serverId, rooomId : data.roomId });
+    const findMember = await memberModel.findOne({ user: data.userId, server: data.serverId, rooomId: data.roomId });
     if (!findMember) {
         throw new NotFoundError("Member Not Found");
     };
@@ -107,7 +98,7 @@ export const deleteRoom = async (data: DeleteRoomRequest): Promise<void> => {
 
     // Delete the server and all room and messages belonging to these server
     await Promise.all([
-        roomModel.deleteMany({server : data.serverId}),  // Deletes the roomDoc 
+        roomModel.deleteMany({ server: data.serverId }),  // Deletes the roomDoc 
     ])
 
 }

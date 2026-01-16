@@ -1,8 +1,8 @@
 import type { Request, Response } from "express";
-import { createServer, getServerMembers, getServerList, deleteServers } from "../services/server.service.js";
+import { createServer, getServerList, deleteServers } from "../services/server.service.js";
 import logger from "../config/logger.js";
 import { asyncHandler } from "../helper/asyncHandler.js";
-import { NewServer, GetServerMemberSchema, GetServerListSchema, DeleteServerSchema } from "../validator/zod.js";
+import { NewServer, GetServerListSchema, DeleteServerSchema } from "../validator/zod.js";
 import { ValidationError } from "../helper/errorClass.js";
 
 // Controller function for New Server
@@ -30,35 +30,6 @@ export const newServer = asyncHandler(async (req: Request, res: Response) => {
     return res.status(201).json({
         success: true,
         message: "NewServer Created Successfully",
-        data: result
-    })
-});
-
-//  Controller Function For Getting Server Members
-export const serverMember = asyncHandler(async (req: Request, res: Response) => {
-    //  Get userId 
-    const userId = (req as any)?.user.id;
-
-
-    const { serverId } = req.params;
-
-    //  Validate
-    const validatedData = GetServerMemberSchema.safeParse({ userId, serverId });
-
-    // Handle Error
-    if(!validatedData.success){
-        throw new ValidationError("Validation Failed!")
-    }
-
-    //  Get Result from Service Function
-    const result = await getServerMembers(validatedData.data);
-
-    logger.info("Server Membrs Fetched Succssfully");
-
-    //  Send the Result to User
-    return res.status(200).json({
-        success: true,
-        message: "Members Fetched Successfully",
         data: result
     })
 });
