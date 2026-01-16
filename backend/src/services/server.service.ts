@@ -1,8 +1,9 @@
-import type { CreateServerRequest, NewServerResponse, GetMemberRequest, GetMemberResponse, GetServerRequest, GetServerResponse } from "../types/types.js";
+import type { CreateServerRequest, NewServerResponse, GetMemberRequest, GetMemberResponse, GetServerRequest, GetServerResponse, DeleteServerReqest } from "../types/types.js";
 import { serverModel } from "../models/server.model.js"
 import logger from "../config/logger.js"
 import { NotFoundError, UnauthorizedError, ValidationError } from "../helper/errorClass.js";
 import { memberModel } from "../models/member.model.js";
+import { roomModel } from "../models/room.model.js";
 
 
 export const createServer = async (data: CreateServerRequest): Promise<NewServerResponse> => {
@@ -40,7 +41,7 @@ export const createServer = async (data: CreateServerRequest): Promise<NewServer
         await newServer.populate("createdBy", "username");
 
     }
-    catch(err : any){
+    catch (err: any) {
         logger.error("Error in member model", err);
         throw new Error("Error in memebr creartion", err)
     }
@@ -121,5 +122,32 @@ export const getServerList = async (data: GetServerRequest): Promise<GetServerRe
     };
 
 
+
+}
+
+export const deleteServers = async (data: DeleteServerReqest): Promise<void> => {
+    // Check fields are not empty
+    if (!data.userId || !data.serverId) {
+        throw new ValidationError("All Fields are Required!");
+    };
+
+    // Find associated user in member model
+    const findMember = await memberModel.findOne({ user: data.userId, server : data.serverId });
+    if (!findMember) {
+        throw new NotFoundError("Member Not Found");
+    };
+
+    // Check if Member is admin?
+    if (!findMember.role.includes("admin")) {  // check role 
+        throw new UnauthorizedError("Not Authorized to delete Server");
+    };
+
+    // Delete the server and all room and messages belonging to these server
+    await Promise.all([
+        serverModel.deleteOne({_id : data.serverId}),  // Delete Server
+        roomModel.deleteMany({server : data.serverId}),  // Deletes all roomDoc where they are part of these server
+        memberModel.deleteMany({server : data.serverId}) // Deletes All member who were part of these server
+        
+    ])
 
 }

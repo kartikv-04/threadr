@@ -58,3 +58,15 @@ export const GetRoomListSchema = z.object({
     userId: z.string().min(24),
     serverId: z.string().min(1, "Server ID is required")
 })
+
+// Delete Server Zod Validation
+export const DeleteServerSchema = z.object({
+    userId : z.string().min(24),
+    serverId : z.string().min(24)
+})
+
+export const DeleteRoomSchema = z.object({
+    userId : z.string().min(24),
+    serverId : z.string().min(24),
+    roomId : z.string().min(24)
+})

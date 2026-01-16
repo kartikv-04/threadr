@@ -78,6 +78,12 @@ export type GetServerResponse = {
     }[];
 }
 
+export type DeleteServerReqest = {
+    userId : string,
+    serverId : string
+}
+
+
 // ==========================================
 // MEMBER TYPES
 // ==========================================
@@ -124,6 +130,12 @@ export type GetRoomResponse = {
         roomName: string;
         isDefault: boolean;
     }[];
+}
+
+export type DeleteRoomRequest = {
+    userId : string,
+    serverId : string,
+    roomId : string
 }
 
 // ==========================================

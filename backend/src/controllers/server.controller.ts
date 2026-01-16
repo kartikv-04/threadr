@@ -1,11 +1,11 @@
 import type { Request, Response } from "express";
-import { createServer, getServerMembers, getServerList } from "../services/server.service.js";
+import { createServer, getServerMembers, getServerList, deleteServers } from "../services/server.service.js";
 import logger from "../config/logger.js";
 import { asyncHandler } from "../helper/asyncHandler.js";
-import { NewServer, GetServerMemberSchema, GetServerListSchema } from "../validator/zod.js";
+import { NewServer, GetServerMemberSchema, GetServerListSchema, DeleteServerSchema } from "../validator/zod.js";
 import { ValidationError } from "../helper/errorClass.js";
 
-// 1. Controller function for New Server
+// Controller function for New Server
 export const newServer = asyncHandler(async (req: Request, res: Response) => {
     // Get user id
     const userId = (req as any)?.user.id.toString();
@@ -86,6 +86,32 @@ export const serverName = asyncHandler(async (req: Request, res: Response) => {
         success: true,
         message: "All Servers Fetched Successfully",
         data: result
+    })
+});
+
+// Controller function For deleting Server
+export const deleteServer = asyncHandler(async (req: Request, res: Response) => {
+    // Get user id
+    const userId = (req as any)?.user.id.toString();
+
+    //  Destructure the req body
+    const { serveId } = req.params;
+
+    //  Validate using Zod
+    const validatedData = DeleteServerSchema.safeParse({ userId, serverName });
+
+    // Handle Erorr
+    if(!validatedData.success){
+            throw new ValidationError("Validation Failed!")
+        }
+
+    // Delete Server
+    await deleteServers(validatedData.data as any);
+
+    //  Return result
+    return res.status(200).json({
+        success: true,
+        message: "Server Deleted Successfully"
     })
 });
 
