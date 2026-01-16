@@ -56,15 +56,16 @@ export const getRooms = async (data: GetRoomRequest): Promise<GetRoomResponse> =
 
     // find all rooms for these server
     let findRooms;
-    const findRoomsForUser = await roomModel.find({ server: data.userId, isPrivate: false });  //returns all public rooms
-    const findRoomsForAdmin = await roomModel.find({ server: data.userId });  //returns all rooms
+    const findRoomsForUser = await roomModel.find({ server: data.serverId, isPrivate: false });  //returns all public rooms
+    const findRoomsForAdmin = await roomModel.find({ server: data.serverId });  //returns all rooms
 
     // if user is admin return all rooms if not return only public rooms
     isMember.role.includes("admin") ? findRooms = findRoomsForAdmin : findRooms = findRoomsForUser;
 
     const roomList = findRooms.map(room => { 
-        const rooms = room as any as {_id : string, roomName : string};
+        const rooms = room as any as {server : string, _id : string, roomName : string};
         return {
+            serverId : rooms.server,
             roomId: rooms._id.toString(),
             roomName: rooms.roomName
         }
@@ -81,7 +82,7 @@ export const deleteRoom = async (data: DeleteRoomRequest): Promise<void> => {
     };
 
     // Find associated user in member model
-    const findMember = await memberModel.findOne({ user: data.userId, server: data.serverId, rooomId: data.roomId });
+    const findMember = await memberModel.findOne({ user: data.userId, server: data.serverId});
     if (!findMember) {
         throw new NotFoundError("Member Not Found");
     };
@@ -91,9 +92,15 @@ export const deleteRoom = async (data: DeleteRoomRequest): Promise<void> => {
         throw new UnauthorizedError("Not Authorized to delete Server");
     };
 
-    // Delete the server and all room and messages belonging to these server
-    await Promise.all([
-        roomModel.deleteMany({ server: data.serverId }),  // Deletes the roomDoc 
-    ])
+    // Delete the room
+    const deleteResult = await roomModel.deleteOne({ 
+        _id: data.roomId, 
+        server: data.serverId 
+    });
+
+    // Check if a room was actually deleted
+    if (deleteResult.deletedCount === 0) {
+        throw new NotFoundError("Room not found or already deleted.");
+    }
 
 }

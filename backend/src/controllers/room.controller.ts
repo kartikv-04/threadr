@@ -73,10 +73,10 @@ export const deleteRoomController = asyncHandler(async (req: Request, res: Respo
     const userId = (req as any)?.user.id.toString();
 
     //  Destructure the req body
-    const { serveId, roomId } = req.params;
+    const { serverId, roomId } = req.params;
 
     //  Validate using Zod
-    const validatedData = DeleteRoomSchema.safeParse({ userId, serveId, roomId });
+    const validatedData = DeleteRoomSchema.safeParse({ userId, serverId, roomId });
 
     // Handle Erorr
     if(!validatedData.success){
@@ -84,11 +84,12 @@ export const deleteRoomController = asyncHandler(async (req: Request, res: Respo
         }
 
     // Delete Server
-    await deleteRoom(validatedData.data as any);
+    const result = await deleteRoom(validatedData.data);
 
     //  Return result
     return res.status(200).json({
         success: true,
-        message: "Room Deleted Successfully"
+        message: "Room Deleted Successfully",
+        data : result
     })
 });

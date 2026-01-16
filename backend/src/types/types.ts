@@ -126,6 +126,7 @@ export type GetRoomRequest = {
 
 export type GetRoomResponse = {
     rooms: {
+        serverId :string,
         roomId: string;
         roomName: string;
     }[];

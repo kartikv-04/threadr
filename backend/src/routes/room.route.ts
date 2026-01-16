@@ -7,6 +7,6 @@ const router = Router();
 router.get('/:serverId/', getRoom);
 // POST  Create a new room
 router.post('/:serverId/', newRoom);
-router.delete('/', deleteRoomController);
+router.delete('/:serverId/:roomId', deleteRoomController);
 
 export default router;
