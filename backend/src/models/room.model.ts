@@ -42,7 +42,7 @@ const roomSchema = new mongoose.Schema<Room>({
 }, { timestamps: true })
 
 // Add indexes
-roomSchema.index({ server: 1, roomNAme: 1 }, { unique: true });
+roomSchema.index({ server: 1, roomName: 1 }, { unique: true });
 
 // Export room model
 export const roomModel = mongoose.model<Room>("Room", roomSchema); 

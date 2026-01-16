@@ -43,7 +43,7 @@ export const newRoom = asyncHandler(async (req: Request, res: Response) => {
 //  Get Room List
 export const getRoom = asyncHandler(async (req: Request, res: Response) => {
     //  Get userId 
-    const userId = (req as any)?.user.id;
+    const userId = (req as any)?.user.id.toString();
     const { serverId } = req.params
 
     //  Validate

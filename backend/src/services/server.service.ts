@@ -61,7 +61,7 @@ export const getServerList = async (data: GetServerRequest): Promise<GetServerRe
     // Find Server of which user is part of
     const serverArray = await memberModel
         .find({ user: data.userId })
-        .populate("server", "name icon")
+        .populate("server", "_id name icon")
         .exec();
 
     if (serverArray.length === 0) {
@@ -70,8 +70,9 @@ export const getServerList = async (data: GetServerRequest): Promise<GetServerRe
     }
     
     const formatedServer = serverArray.map( list => {
-        const server = list.server as any as { name: string; icon: string };
+        const server = list.server as any as { _id : string, name: string; icon: string };
              return {
+                serverId : server._id.toString(),
                 name: server.name,
                 icon: server.icon
             };

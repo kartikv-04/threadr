@@ -16,14 +16,9 @@ export const createRoom = async (data: NewRoomRequest): Promise<NewRoomResponse>
     }
 
     // Logic to allow only admin of server to create new channel/room
-    const serverAdmin = await serverModel.findById(data.serverId);
+    const serverAdmin = await memberModel.findOne({user : data.userId, server : data.serverId})
 
     if (!serverAdmin) {
-        throw new NotFoundError("Server Not Found");
-    }
-
-    if (data.userId.toString() !== serverAdmin.createdBy.toString()) {
-        logger.error("Only admin can create Room within Server!");
         throw new UnauthorizedError("Only admin can create Room within Server!")
     }
 
@@ -68,11 +63,11 @@ export const getRooms = async (data: GetRoomRequest): Promise<GetRoomResponse> =
     isMember.role.includes("admin") ? findRooms = findRoomsForAdmin : findRooms = findRoomsForUser;
 
     const roomList = findRooms.map(room => { 
-    const rooms = room as any as {roomId : string, roomName : string};
-    return {
-        roomId: room._id.toString(),
-        roomName: room.roomName
-    }
+        const rooms = room as any as {_id : string, roomName : string};
+        return {
+            roomId: rooms._id.toString(),
+            roomName: rooms.roomName
+        }
     });
 
     return { rooms: roomList };

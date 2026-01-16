@@ -37,7 +37,7 @@ export const newServer = asyncHandler(async (req: Request, res: Response) => {
 //  Controller Function For Getting All Server Name
 export const serverName = asyncHandler(async (req: Request, res: Response) => {
     //  Get userId 
-    const userId = (req as any)?.user.id
+    const userId = (req as any)?.user.id.toString();
 
     //  Validate userId
     const validatedData = GetServerListSchema.safeParse({ userId });
@@ -66,10 +66,10 @@ export const deleteServer = asyncHandler(async (req: Request, res: Response) => 
     const userId = (req as any)?.user.id.toString();
 
     //  Destructure the req body
-    const { serveId } = req.params;
+    const { serverId } = req.params;
 
     //  Validate using Zod
-    const validatedData = DeleteServerSchema.safeParse({ userId, serveId });
+    const validatedData = DeleteServerSchema.safeParse({ userId, serverId });
 
     // Handle Erorr
     if(!validatedData.success){
