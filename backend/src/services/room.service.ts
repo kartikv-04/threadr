@@ -1,85 +1,106 @@
 import logger from "../config/logger.js"
 import { roomModel } from "../models/room.model.js"
 import { serverModel } from "../models/server.model.js"
-import type { NewRoomRequest, ReturnNewRoom, getRoomRequest, GetRoomResponse } from "../types/types.js"
+import type { NewRoomRequest, NewRoomResponse, GetRoomRequest, GetRoomResponse, DeleteRoomRequest } from "../types/types.js"
+import { NotFoundError, UnauthorizedError, ValidationError } from "../helper/errorClass.js";
+import { memberModel } from "../models/member.model.js";
 
 
 
-export const createRoom = async (data: NewRoomRequest): Promise<ReturnNewRoom> => {
-    try {
-        // Validate and check incoming details
-        if (!data.userId || !data.roomName || !data.serverId) {
-            logger.error("Provide All Details!!");
-            throw new Error("Provide All Details!!");
-        }
+export const createRoom = async (data: NewRoomRequest): Promise<NewRoomResponse> => {
 
-        // Logic to allow only admin of server to create new channel/room
-        const serverAdmin = await serverModel.findById(data.serverId);
-        if (data.userId.toString() !== serverAdmin?.createdBy.toString()) {
-            logger.error("Only admin can create Room within Server!");
-            throw new Error("Only admin can ")
-        }
-
-        // Create new Room for Server
-        const newRoom = await roomModel.create({
-            roomName: data.roomName,
-            server: data.serverId
-        })
-
-        // Log new Room creation
-        logger.info(`New Room created Under Server : ${data.serverId}`);
-
-        // Return essentials details for room creation
-        return {
-            roomId: newRoom._id,
-            roomName: newRoom.roomName,
-            serverId: newRoom.server
-        }
+    // Validate and check incoming details
+    if (!data.userId || !data.roomName || !data.serverId) {
+        logger.error("Provide All Details!!");
+        throw new ValidationError("Provide All Details!!");
     }
-    catch (err: any) {
-        logger.error({ err }, "Error creating Room!");
-        throw new Error("Error creating Room!");
+
+    // Logic to allow only admin of server to create new channel/room
+    const serverAdmin = await memberModel.findOne({user : data.userId, server : data.serverId})
+
+    if (!serverAdmin) {
+        throw new UnauthorizedError("Only admin can create Room within Server!")
+    }
+
+    // Create new Room for Server
+    const newRoom = await roomModel.create({
+        roomName: data.roomName,
+        createdBy: data.userId,
+        server: data.serverId,
+        createdAt: new Date()
+    })
+
+    // Log new Room creation
+    logger.info(`New Room created Under Server : ${data.serverId}`);
+
+    // Return essentials details for room creation
+    return {
+        roomId: newRoom._id.toString(),
+        roomName: newRoom.roomName,
+        serverId: data.serverId.toString(),
+        createdAt: newRoom.createdAt
     }
 }
 
-export const getRooms = async (data: getRoomRequest): Promise<GetRoomResponse> => {
-    try {
-        // Check if user is part of server who trying to get room of perticular server?
-        const userServer = await serverModel.findById(data.serverId);
-
-        // Check all member userid to ensure user is admin or member of server!
-        const getMemebrId = userServer?.members.filter((id) => id.toString() == data.userId);
-
-        if (!getMemebrId) {
-            logger.error("You are not allowed to get room list");
-            throw new Error("you are not allowed to get rooms list");
-        }
-
-        // Now get all rooms whihc are part of these server
-        const getRooms = await roomModel.find({ server: data.serverId });
-
-        if (!getRooms) {
-            logger.info("No Room was found for these Server!");
-            throw new Error("No Room was found for these Server!");
-        }
-
-        // Log Successfull that Rooms Found
-        logger.info("Rooms found successfully");
-
-        // Return All details with room name, and id and etc...
-        const allRooms = getRooms.map((room) => ({
-            roomId: room._id,
-            roomName: room.roomName,
-            serverId: room.server
-        }));
-
-        // Return All Room Details
-        return allRooms;
-
+export const getRooms = async (data: GetRoomRequest): Promise<GetRoomResponse> => {
+    // Check fields if are empty
+    if (!data.userId || !data.serverId) {
+        throw new ValidationError("All fields are required");
     }
-    catch (error: any) {
-        logger.error("Error getting room list details");
-        throw new Error("Error getting room list details!");
+
+    // Check if user is member or not
+    const isMember = await memberModel.findOne({ user: data.userId });
+    if (!isMember) {
+        throw new NotFoundError("User npt Found");
+    };
+
+    // find all rooms for these server
+    let findRooms;
+    const findRoomsForUser = await roomModel.find({ server: data.serverId, isPrivate: false });  //returns all public rooms
+    const findRoomsForAdmin = await roomModel.find({ server: data.serverId });  //returns all rooms
+
+    // if user is admin return all rooms if not return only public rooms
+    isMember.role.includes("admin") ? findRooms = findRoomsForAdmin : findRooms = findRoomsForUser;
+
+    const roomList = findRooms.map(room => { 
+        const rooms = room as any as {server : string, _id : string, roomName : string};
+        return {
+            serverId : rooms.server,
+            roomId: rooms._id.toString(),
+            roomName: rooms.roomName
+        }
+    });
+
+    return { rooms: roomList };
+
+}
+
+export const deleteRoom = async (data: DeleteRoomRequest): Promise<void> => {
+    // Check fields are not empty
+    if (!data.userId || !data.serverId || !data.roomId) {
+        throw new ValidationError("All Fields are Required!");
+    };
+
+    // Find associated user in member model
+    const findMember = await memberModel.findOne({ user: data.userId, server: data.serverId});
+    if (!findMember) {
+        throw new NotFoundError("Member Not Found");
+    };
+
+    // Check if Member is admin?
+    if (!findMember.role.includes("admin")) {  // check role 
+        throw new UnauthorizedError("Not Authorized to delete Server");
+    };
+
+    // Delete the room
+    const deleteResult = await roomModel.deleteOne({ 
+        _id: data.roomId, 
+        server: data.serverId 
+    });
+
+    // Check if a room was actually deleted
+    if (deleteResult.deletedCount === 0) {
+        throw new NotFoundError("Room not found or already deleted.");
     }
 
 }

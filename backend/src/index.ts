@@ -8,6 +8,8 @@ import { connectDB } from './config/db.js';
 import indexRouter from '../src/routes/index.route.js';
 import { socketAuth } from './middleware/socketAuth.js';
 import { socketHandler } from './socket/socket.js';
+import { ValidationError } from './helper/errorClass.js';
+import { errorHandler } from './middleware/errorMiddleware.js';
 
 const PORT = 5000;
 
@@ -20,7 +22,13 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Test route - add to see error middleware
+app.get('/test-error', (req, res, next) => {
+    next(new ValidationError("Test error"));
+});
+
 app.use('/api/v1', indexRouter);
+app.use(errorHandler);
 
 // Create Server and io
 const server = http.createServer(app);
@@ -46,6 +54,7 @@ server.listen(PORT, () => {
     connectDB();
     logger.info(`Server Running at http://localhost:${PORT}`);
 });
+
 
 
 

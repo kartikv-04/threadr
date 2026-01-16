@@ -1,31 +1,32 @@
-import mongoose, { Document, Types, Schema } from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 
-// types for Server model
+// Types for Server model
 interface Server extends Document {
-    name: string,
-    createdBy: Schema.Types.ObjectId,
-    members: Types.ObjectId[],
-    isPersonal: Boolean,
-    inviteLink: string
-
+    name: string;
+    createdBy: Schema.Types.ObjectId;
+    members: Schema.Types.ObjectId[];
+    isPersonal: boolean;
+    inviteLink?: string;
+    createdAt: Date;
+    updatedAt: Date;
+    icon : string
 }
 
 // Schema for server model
 const serverSchema = new mongoose.Schema<Server>({
     name: {
         type: String,
-        required: true
+        required: [true, 'Server name is required'],
+        trim: true,
+        minlength: [1, 'Server name must be at least 1 character'],
+        maxlength: [100, 'Server name cannot exceed 100 characters']
     },
     createdBy: {
-        type: mongoose.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: "User",
-        required: true
+        required: [true, 'Creator reference is required'],
+        immutable: true  // Creator cannot be changed after creation
     },
-    members: [{
-        type: mongoose.Types.ObjectId,
-        ref: "User",
-        index: true
-    }],
     isPersonal: {
         type: Boolean,
         default: true
@@ -34,8 +35,13 @@ const serverSchema = new mongoose.Schema<Server>({
         type: String,
         unique: true,
         sparse: true
+    },
+    icon : {
+        type : String,
+        default : null
     }
-}, { timestamps: true })
+}, { timestamps: true });
+
 
 // Export server model
 export const serverModel = mongoose.model<Server>("Server", serverSchema);

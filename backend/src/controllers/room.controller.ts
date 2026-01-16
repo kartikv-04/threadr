@@ -1,122 +1,95 @@
 import logger from "../config/logger.js";
 import type { Request, Response } from "express";
-import { createRoom, getRooms } from "../services/room.service.js";
+import { createRoom, getRooms, deleteRoom } from "../services/room.service.js";
+import { asyncHandler } from "../helper/asyncHandler.js";
+import { NewRoom, GetRoomListSchema, DeleteRoomSchema } from "../validator/zod.js";
+import { ValidationError } from "../helper/errorClass.js";
 
-// 1. Create a room
-export const newRoom = async (req: Request, res: Response) => {
-    try {
-        // 1. Get userId
-        const userId = (req as any)?.user.id;
+//  Create a room
+export const newRoom = asyncHandler(async (req: Request, res: Response) => {
+    //  Get userId
+    const userId = (req as any)?.user.id.toString();
 
-        // 2. Validate userId
-        if (!userId) {
-            return res.status(401).json({
-                success: false,
-                message: "Unauthorized : Token Not Found"
-            })
+    //  Get serverId and roomName
+    const { serverId } = req.params;
+    const roomName = req.body.roomName;
+
+    logger.debug(`userId : ${userId}`);
+    logger.debug(`serverId : ${serverId}`);
+    logger.debug(`roomName : ${roomName}`);
+
+    //  Validation
+    const validatedData = NewRoom.safeParse({ userId, serverId, roomName });
+
+    // Handle Error
+    if(!validatedData.success){
+            logger.error(validatedData.error, "Validation error");
+            throw new ValidationError("Validation Failed!")
         }
 
-        // 3. Get serverId and roomName
-        const { serverId } = req.params;
+    //  Creat room
+    const result = await createRoom(validatedData.data);
 
-        // 4. Validate and check serverId
-        if (!serverId) {
-            return res.status(400).json({
-                success: false,
-                message: "ServerId Not Found, try try again!!"
-            })
-        }
+    logger.info(`New Room Created Successfully : ${result.roomName}`);
 
-        // 5. Get Room name thorugh req body
-        const roomName = req.body.roomName;
+    //  Return new room
+    return res.status(201).json({
+        success: true,
+        message: "New Room created Successfully",
+        data: result
+    })
+});
 
-        // 6. Check and validate roomName
-        if (!roomName) {
-            return res.status(400).json({
-                success: false,
-                message: "Room name Not Found, Try again!"
-            })
-        }
+//  Get Room List
+export const getRoom = asyncHandler(async (req: Request, res: Response) => {
+    //  Get userId 
+    const userId = (req as any)?.user.id.toString();
+    const { serverId } = req.params
 
-        // 7. Create data object
-        const data = {
-            userId,
-            roomName,
-            serverId
-        }
+    //  Validate
+    const validatedData = GetRoomListSchema.safeParse({ userId, serverId });
 
-        // 8. Creat room
-        const result = await createRoom(data);
-
-        logger.info(`New Room Created Successfully : ${data.roomName}`);
-
-        // 9. Return new room
-        return res.status(201).json({
-            success: true,
-            message: "New Room created Successfully",
-            data: result
-        })
-    }
-    // Handle Error appropriately
-    catch (error: any) {
-        logger.error(`Error creating new room with serverId : ${error}`);
-        return res.status(500).json({
-            success: false,
-            message: "Error Creating New Room!!"
-        });
-    }
-}
-
-// 2. Get Room List
-export const getRoom = async (req: Request, res: Response) => {
-    try {
-        // 1. Get userId 
-        const userId = (req as any)?.user.id;
-
-        // 2. Validate and check userID
-        if (!userId) {
-            return res.status(400).json({
-                success: false,
-                message: "Unauthorized : Token not found"
-            })
-        }
-
-        // 3. Get serverId through params
-        const { serverId } = req.params
-
-        // 4. Validate serverId 
-        if (!serverId) {
-            return res.status(400).json({
-                success: false,
-                message: "serverId is required in URL Path"
-            });
-        }
-
-        // 5. Create data object
-        const data = {
-            userId,
-            serverId
-        }
-
-        // 6. Get rooms
-        const result = await getRooms(data);
-
-        logger.info("Room list Fetched Successfully");
-
-        // 7. Return response
-        return res.status(200).json({
-            success: true,
-            message: "Room Fetched Successfully",
-            data: result
-        })
-    }
-    // Handle the error using catch
-    catch (error: any) {
-        logger.error(`Error fetching room names`, error);
-        return res.status(500).json({
-            success: false,
-            message: error.message || "Error getting room list"
-        })
+    // Handle Error
+    if(!validatedData.success){
+        throw new ValidationError("Validation Failed!")
     }
 
-}
+    //  Get rooms
+    const result = await getRooms(validatedData.data);
+
+    logger.info("Room list Fetched Successfully");
+
+    //  Return response
+    return res.status(200).json({
+        success: true,
+        message: "Room Fetched Successfully",
+        data: result
+    })
+});
+
+// Controller function For deleting Server
+export const deleteRoomController = asyncHandler(async (req: Request, res: Response) => {
+    // Get user id
+    const userId = (req as any)?.user.id.toString();
+
+    //  Destructure the req body
+    const { serverId, roomId } = req.params;
+
+    //  Validate using Zod
+    const validatedData = DeleteRoomSchema.safeParse({ userId, serverId, roomId });
+
+    // Handle Erorr
+    if(!validatedData.success){
+            throw new ValidationError("Validation Failed!")
+        }
+
+    // Delete Server
+    const result = await deleteRoom(validatedData.data);
+
+    //  Return result
+    return res.status(200).json({
+        success: true,
+        message: "Room Deleted Successfully",
+        data : result
+    })
+});

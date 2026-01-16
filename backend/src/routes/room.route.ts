@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getRoom, newRoom } from "../controllers/room.controller.js";
+import { deleteRoomController, getRoom, newRoom } from "../controllers/room.controller.js";
 
 const router = Router();
 
@@ -7,5 +7,6 @@ const router = Router();
 router.get('/:serverId/', getRoom);
 // POST  Create a new room
 router.post('/:serverId/', newRoom);
+router.delete('/:serverId/:roomId', deleteRoomController);
 
 export default router;
