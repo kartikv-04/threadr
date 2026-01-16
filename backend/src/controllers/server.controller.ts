@@ -98,7 +98,7 @@ export const deleteServer = asyncHandler(async (req: Request, res: Response) => 
     const { serveId } = req.params;
 
     //  Validate using Zod
-    const validatedData = DeleteServerSchema.safeParse({ userId, serverName });
+    const validatedData = DeleteServerSchema.safeParse({ userId, serveId });
 
     // Handle Erorr
     if(!validatedData.success){

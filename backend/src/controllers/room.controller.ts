@@ -1,8 +1,8 @@
 import logger from "../config/logger.js";
 import type { Request, Response } from "express";
-import { createRoom, getRooms } from "../services/room.service.js";
+import { createRoom, getRooms, deleteRoom } from "../services/room.service.js";
 import { asyncHandler } from "../helper/asyncHandler.js";
-import { NewRoom, GetRoomListSchema } from "../validator/zod.js";
+import { NewRoom, GetRoomListSchema, DeleteRoomSchema } from "../validator/zod.js";
 import { ValidationError } from "../helper/errorClass.js";
 
 //  Create a room
@@ -64,5 +64,31 @@ export const getRoom = asyncHandler(async (req: Request, res: Response) => {
         success: true,
         message: "Room Fetched Successfully",
         data: result
+    })
+});
+
+// Controller function For deleting Server
+export const deleteRoomController = asyncHandler(async (req: Request, res: Response) => {
+    // Get user id
+    const userId = (req as any)?.user.id.toString();
+
+    //  Destructure the req body
+    const { serveId, roomId } = req.params;
+
+    //  Validate using Zod
+    const validatedData = DeleteRoomSchema.safeParse({ userId, serveId, roomId });
+
+    // Handle Erorr
+    if(!validatedData.success){
+            throw new ValidationError("Validation Failed!")
+        }
+
+    // Delete Server
+    await deleteRoom(validatedData.data as any);
+
+    //  Return result
+    return res.status(200).json({
+        success: true,
+        message: "Room Deleted Successfully"
     })
 });

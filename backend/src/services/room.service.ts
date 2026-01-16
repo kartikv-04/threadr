@@ -1,8 +1,9 @@
 import logger from "../config/logger.js"
 import { roomModel } from "../models/room.model.js"
 import { serverModel } from "../models/server.model.js"
-import type { NewRoomRequest, NewRoomResponse, GetRoomRequest, GetRoomResponse } from "../types/types.js"
+import type { NewRoomRequest, NewRoomResponse, GetRoomRequest, GetRoomResponse, DeleteRoomRequest } from "../types/types.js"
 import { NotFoundError, UnauthorizedError, ValidationError } from "../helper/errorClass.js";
+import { memberModel } from "../models/member.model.js";
 
 
 
@@ -84,5 +85,29 @@ export const getRooms = async (data: GetRoomRequest): Promise<GetRoomResponse> =
     return {
         rooms : allRooms
     };
+
+}
+
+export const deleteRoom = async (data: DeleteRoomRequest): Promise<void> => {
+    // Check fields are not empty
+    if (!data.userId || !data.serverId || !data.roomId) {
+        throw new ValidationError("All Fields are Required!");
+    };
+
+    // Find associated user in member model
+    const findMember = await memberModel.findOne({ user: data.userId, server : data.serverId, rooomId : data.roomId });
+    if (!findMember) {
+        throw new NotFoundError("Member Not Found");
+    };
+
+    // Check if Member is admin?
+    if (!findMember.role.includes("admin")) {  // check role 
+        throw new UnauthorizedError("Not Authorized to delete Server");
+    };
+
+    // Delete the server and all room and messages belonging to these server
+    await Promise.all([
+        roomModel.deleteMany({server : data.serverId}),  // Deletes the roomDoc 
+    ])
 
 }
