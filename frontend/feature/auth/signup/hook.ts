@@ -1,6 +1,6 @@
 "use client";
 import { useMutation } from "@tanstack/react-query";
-import { SignupPayload } from "./types";
+import { SignupPayload } from "./type";
 import { getSignup } from "./api";
 
 // Hook to Post Signup User

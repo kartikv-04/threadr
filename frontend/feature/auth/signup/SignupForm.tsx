@@ -1,3 +1,4 @@
+'use client'
 import { Button } from "@/components/ui/button"
 import {
     Card,
@@ -12,9 +13,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { MessageSquareMore } from 'lucide-react';
 import { useState } from "react";
-import { SignupPayload } from "./types";
+import { SignupPayload } from "./type";
+import { useSignup } from "./hook"
 
-const SignupForm = ({ formSubmit }: any) => {
+const SignupForm = () => {
+    const {mutate} = useSignup();
+
     const [formData, setFormData] = useState<SignupPayload>({
         username : "",
         name : "",
@@ -28,9 +32,21 @@ const SignupForm = ({ formSubmit }: any) => {
         console.log("this is fomrData", formData);
     }
 
+    function submitForm (data : SignupPayload){
+        console.log("Form Submitted", data);
+        mutate(data, {
+            onSuccess : (response) => {
+                console.log("Repsonse", response);
+            },
+            onError : (error) => {
+                console.error("Error", error);
+            }
+        });
+    }
+
     function handleSubmit(e:any){
         e.preventDefault();
-        formSubmit(formData);
+        submitForm(formData);
     }
 
 
