@@ -4,7 +4,7 @@ import logger from "./logger.js";
 
 export const connectDB = async () => {
     try {
-        await mongoose.connect(MONGO_URI!);
+        await mongoose.connect(MONGO_URI!,{dbName : "Discord"});
         logger.info("Databse Connected successfully!");
     
     }

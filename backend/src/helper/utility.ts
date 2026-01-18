@@ -2,13 +2,23 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { ACCESS_SECRET, REFRESH_SECRET } from '../config/env.js';
 import type { Types } from 'mongoose';
-import { serverModel } from '../models/server.model.js';
 import logger from '../config/logger.js';
-import { roomModel } from '../models/room.model.js';
+import { createRoom } from '../services/room.service.js';
+import type { NewRoomRequest } from '../types/types.js';
+import { createServer } from '../services/server.service.js';
+
 
 type TokenPair = {
     accessToken: string,
     refreshToken: string
+}
+
+type PersonalServer = {
+    serverId : string,
+    roomId : string,
+    serverName: string,
+    roomName: string
+
 }
 
 export const hashPassword = async (password: string): Promise<string> => {
@@ -29,36 +39,52 @@ export const generateToken = (userId: Types.ObjectId): TokenPair => {
 
 }
 
-export const newPersonalServer = async (userId: string): Promise<{ serverName: string, roomName: string }> => {
+export const newPersonalServer = async (userId: string): Promise<PersonalServer> => {
     try {
-        // 1. Check if user if user id is not empty
+        // Check if user if user id is not empty
         if (!userId) {
             throw new Error("user id Not provided!");
         }
 
-        // 2. Create a default Personal Welcome Server with Welcome room in it
-        const personalNewServer = await serverModel.create({
-            name: "Welcome",
-            createdBy: userId,
-            members: userId,
-            isPersonal: true,
-        })
+        logger.debug("Userid provided");
 
-        // 3. Create a NEw Room as Welcome OR Notes name
-        const personalServerRoom = await roomModel.create({
-            roomName: "notes",
-            server: personalNewServer._id
-        })
+        // Create a default Personal Welcome Server with Welcome room in it
+        const serverData = {
+            userId : userId,
+            serverName : "Welcome"
+        }
+
+        const personalServer = await createServer(serverData);
+
+        logger.debug(`Personal Server has been created for user : ${userId}`);
+
+        // Create a New Room as general name
+        const newRoom : NewRoomRequest = {
+            userId : userId,
+            roomName : "general",
+            serverId : personalServer.serverId,
+        }
+
+        const firstRoom = await createRoom(newRoom);
+        logger.debug("New room Created");
+
+        if(!firstRoom){
+            logger.info("Error creatig New Room for Server")
+            throw new Error("Error in creating new room for server");
+        }
 
         // return Created Server's Name only
         return {
-            serverName: personalNewServer.name,
-            roomName: personalServerRoom.roomName
+            serverId : personalServer.serverId,
+            roomId : firstRoom.roomId,
+            serverName: personalServer.serverName,
+            roomName: (firstRoom).roomName
+
         };
 
     }
     catch (err: any) {
-        logger.error("Error creating new Server while sign up!!");
+        logger.error("Error creating new Server while sign up!!", err);
         throw new Error("Personal server could not be created!");
     }
 }
