@@ -15,9 +15,13 @@ import { MessageSquareMore } from 'lucide-react';
 import { useState } from "react";
 import { SignupPayload } from "./type";
 import { useSignup } from "./hook"
+import { useRouter } from "next/navigation"
+import { useAuthStore } from "@/store/AuthStore"
 
 const SignupForm = () => {
+    const router = useRouter();
     const {mutate} = useSignup();
+    const loginUser = useAuthStore((state)=>state.login);
 
     const [formData, setFormData] = useState<SignupPayload>({
         username : "",
@@ -35,9 +39,18 @@ const SignupForm = () => {
     function submitForm (data : SignupPayload){
         console.log("Form Submitted", data);
         mutate(data, {
+            // OnSuccess
             onSuccess : (response) => {
                 console.log("Repsonse", response);
+
+                // Save token After signup
+                const token = response.data?.user.accessToken;
+                if(token){
+                    loginUser(token);
+                    console.log("token Saved SuccessFully");
+                }
             },
+            // OnError
             onError : (error) => {
                 console.error("Error", error);
             }
