@@ -4,7 +4,6 @@ import mongoose, { Document, Schema } from 'mongoose';
 interface Server extends Document {
     name: string;
     createdBy: Schema.Types.ObjectId;
-    members: Schema.Types.ObjectId[];
     isPersonal: boolean;
     inviteLink?: string;
     createdAt: Date;

@@ -153,7 +153,7 @@ export type MessageResponse = {
     messageId: string;
     content: string;
     userId: string; // ID of the sender (User Model)
-    username: string; // Display name
+    // username: string; // Display name
     isEdited: boolean;
     createdAt: Date;
     // Optional: Only include if you need to show Reply UI

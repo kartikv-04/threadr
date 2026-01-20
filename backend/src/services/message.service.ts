@@ -1,12 +1,13 @@
 import logger from "../config/logger.js"
 import { serverModel } from "../models/server.model.js"
 import { messageModel } from "../models/message.model.js"
-import type { GetMessages, MessageResponse, SendMessage, SendMessageResponse } from "../types/types.js"
+import type { GetMessagesRequest, MessageResponse, SendMessageRequest } from "../types/types.js"
 import { roomModel } from "../models/room.model.js"
 import { NotFoundError, UnauthorizedError, ValidationError } from "../helper/errorClass.js";
+import { memberModel } from "../models/member.model.js";
 
 
-export const sendMessageService = async (data: SendMessage): Promise<SendMessageResponse> => {
+export const sendMessageService = async (data: SendMessageRequest): Promise<MessageResponse> => {
     // Check if all fields are valid and not empty
     if (!data.userId || !data.serverId || !data.roomId || !data.content) {
         logger.warn(`Missing Fields ${data.userId}, ${data.serverId} and many more`);
@@ -21,7 +22,7 @@ export const sendMessageService = async (data: SendMessage): Promise<SendMessage
     }
 
     // if server exist check is user is member or not
-    const isMember = findServer?.members.some(id => id.toString() === data.userId);
+    const isMember = await memberModel.findOne({ server: data.serverId, user: data.userId });
     if (!isMember) {
         logger.warn(`Unauthorized attempt to get messages by user with ${data.userId}`);
         throw new UnauthorizedError("Unauthorized request to view message");
@@ -31,7 +32,8 @@ export const sendMessageService = async (data: SendMessage): Promise<SendMessage
     const newMessage = await messageModel.create({
         content: data.content,
         sentBy: data.userId,
-        room: data.roomId
+        room: data.roomId,
+        server: data.serverId
     })
 
     // Populate message model to get username
@@ -45,13 +47,13 @@ export const sendMessageService = async (data: SendMessage): Promise<SendMessage
         messageId: newMessage._id.toString(),
         content: populated.content,
         userId: data.userId.toString(),
-        isEdited: newMessage.isEdited,
-        sentBy: populated.sentBy,
+        isEdited: newMessage.isEdited, 
+        // sentBy: populated.sentBy,
         createdAt: populated.createdAt
     }
 }
 
-export const recieveMessage = async (data: GetMessages): Promise<MessageResponse> => {
+export const recieveMessage = async (data: GetMessagesRequest): Promise<MessageResponse> => {
     // 1. Validatoin : Check if Fields Exist
     if (!data.userId || !data.serverId || !data.roomId) {
         logger.warn("Missing fields for recieving messages!!");
@@ -66,7 +68,7 @@ export const recieveMessage = async (data: GetMessages): Promise<MessageResponse
     }
 
     // 3. Check if User is part of the server or not
-    const ifUser = ifServer.members.some(id => id.toString() === data.userId);
+    const ifUser = await memberModel.findOne({ server: data.serverId, user: data.userId });
     if (!ifUser) {
         logger.warn(`Unauthorized attempt to view message with userid : ${data.userId}`);
         throw new UnauthorizedError("You are not memebr of these server!");

@@ -1,3 +1,4 @@
+import { memberModel } from "../models/member.model.js";
 import { Socket, Server } from "socket.io";
 import logger from "../config/logger.js";
 import { userModel } from "../models/user.model.js";
@@ -70,8 +71,8 @@ export const socketHandler = async (io: Server, socket: AuthenticatedSocket) => 
             }
 
             // Verify user is member of server
-            const server = await serverModel.findById(serverId);
-            if (!server || !server.members.some(m => m.toString() === userId)) {
+            const isMember = await memberModel.findOne({ server: serverId, user: userId });
+            if (!isMember) {
                 socket.emit("error", { message: "Unauthorized" });
                 return;
             }
@@ -80,7 +81,8 @@ export const socketHandler = async (io: Server, socket: AuthenticatedSocket) => 
             const newMessage = await messageModel.create({
                 content: content.trim(),
                 sentBy: userId,
-                room: roomId
+                room: roomId,
+                server: serverId
             });
 
             await newMessage.populate("sentBy", "username");
