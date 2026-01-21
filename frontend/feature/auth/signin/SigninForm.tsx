@@ -16,6 +16,7 @@ import { SignInPayload } from "./type"
 import { useSignIn } from "./hook"
 import { useAuthStore } from "@/store/AuthStore";
 import { useRouter } from "next/navigation";
+// import { setAuthToken } from "@/lib/api";
 
 
 const SigninForm = () => {
@@ -44,6 +45,7 @@ const SigninForm = () => {
                 // Get the Token
                 const token = response.data?.user?.accessToken;
                 if(token){
+                    // setAuthToken(token);
                     loginUser(token);
                     console.log("token Saved SuccessFully");
                     // Redirect to Main Page
