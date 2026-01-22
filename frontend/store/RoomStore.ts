@@ -1,17 +1,16 @@
 import { create } from "zustand";
 
-
 type RoomState = {
     activeRoomId: string | null;
 
-    // Action Fucntions
+    // Action Functions
     setActiveRoomId: (roomId: string | null) => void;
 }
 
 export const useRoomStore = create<RoomState>()((set) => ({
-    // Intial State 
+    // Initial State 
     activeRoomId: null,
 
-    // Action Fucntions
+    // Action Functions
     setActiveRoomId: (roomId: string | null) => set({ activeRoomId: roomId }),
 }))
