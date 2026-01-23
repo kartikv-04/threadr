@@ -4,7 +4,9 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ServerSidebar } from "@/feature/server/sidebar";
 import { RoomSidebar } from "@/feature/server/room";
+import { ChatArea } from "@/feature/chat";
 import { useServerStore } from "@/store/ServerStore";
+import { useRoomStore } from "@/store/RoomStore";
 import { useAuthStore } from "@/store/AuthStore";
 import { Mic, Headphones, Cog } from "lucide-react";
 
@@ -14,7 +16,7 @@ const UserPanel = () => {
         <div className="flex items-center gap-2 h-13 px-2 bg-neutral-950/80 border-t border-neutral-800/50">
             {/* User Avatar with status */}
             <div className="relative">
-                <div className="w-8 h-8 rounded-full bg-linear-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
                     <span className="text-white text-sm font-semibold">U</span>
                 </div>
                 {/* Online status dot */}
@@ -68,6 +70,7 @@ const HomeSidebar = () => {
 export default function Page() {
     const router = useRouter();
     const { activeServerId } = useServerStore();
+    const { activeRoomId } = useRoomStore();
     const { isLoggedIn, accessToken } = useAuthStore();
 
     // Redirect to login if not authenticated
@@ -98,14 +101,22 @@ export default function Page() {
                 <HomeSidebar />
             )}
 
-            {/* Main Content Area */}
-            <div className="flex-1 flex items-center justify-center text-white/40">
-                {activeServerId ? (
-                    <p className="text-lg">Select a room to start chatting</p>
-                ) : (
-                    <p className="text-lg">Select a server from the sidebar</p>
-                )}
-            </div>
+            {/* Main Content Area - Chat or Empty State */}
+            {activeServerId && activeRoomId ? (
+                <ChatArea
+                    serverId={activeServerId}
+                    roomId={activeRoomId}
+                    roomName="general"
+                />
+            ) : (
+                <div className="flex-1 flex items-center justify-center text-white/40">
+                    {activeServerId ? (
+                        <p className="text-lg">Select a room to start chatting</p>
+                    ) : (
+                        <p className="text-lg">Select a server from the sidebar</p>
+                    )}
+                </div>
+            )}
         </div>
     );
 }
