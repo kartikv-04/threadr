@@ -70,3 +70,18 @@ export const DeleteRoomSchema = z.object({
     serverId : z.string().min(24),
     roomId : z.string().min(24)
 })
+
+export const generateInviteSchema = z.object({
+  serverId: z.string().min(1, "Server ID is required"),
+  options: z.object({
+    expiresIn: z.enum(["30m", "1h", "6h", "12h", "1d", "7d", "never"]).optional(),
+    maxUses: z.number().int().min(0).optional(), // min(0) prevents negative numbers
+  }).optional(),
+});
+
+export const inviteResponseSchema = z.object({
+  url: z.string().url(),
+  code: z.string().min(1),
+  expiresAt: z.date().nullable(), // Nullable because it might be "never"
+  isPermanent: z.boolean(),
+});

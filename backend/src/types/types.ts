@@ -97,10 +97,27 @@ export type DeleteServerReqest = {
     serverId : string
 }
 
+// ==========================================
+// INVITE TYPES
+// ==========================================
 
-// ==========================================
-// MEMBER TYPES
-// ==========================================
+// What the function NEEDS to do the job
+export interface GenerateInviteRequest {
+  serverId: string;
+  userId: string;         // The ID of the user creating the invite
+  options?: {
+    expiresIn?: string;   // e.g., "30m", "1h", "7d", "never"
+    maxUses?: number;     // e.g., 1, 10, 0 (unlimited)
+  };
+}
+
+// What the function GIVES BACK to the controller/frontend
+export interface GenerateInviteResponse {
+  url: string;            // Full link: "http://site.com/invite/abc-123"
+  code: string;           // Just code: "abc-123"
+  expiresAt: Date | null; // useful for UI to show "Expires in 5 mins"
+  isPermanent: boolean;
+}
 
 export type GetMemberRequest = {
     userId: string;

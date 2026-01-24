@@ -11,5 +11,7 @@ router.use('/auth', authRouter);
 router.use('/s', authenticate, serverRouter);
 router.use('/r', authenticate, roomRouter);
 router.use('/m', authenticate, messageRouter);
+router.use('/invite/:code', messageRouter);
+router.use('/invite/:code/join', authenticate, messageRouter);
 
 export default router;

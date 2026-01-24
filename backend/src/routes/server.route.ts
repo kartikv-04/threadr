@@ -6,5 +6,6 @@ const router = Router();
 router.get('/',  serverName); // GET 
 router.post('/',  newServer); // POST 
 router.delete('/:serverId', deleteServer); // DELETE
+router.delete('/:serverId/invite', deleteServer); // DELETE
 
 export default router;
