@@ -1,35 +1,34 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { createJSONStorage, persist } from "zustand/middleware";
 import axios from "axios";
 
 interface AuthState {
-    isLoggedIn: boolean;
     accessToken: string | null;
+    _hasHydrated: boolean;
 
     // Action Functions
     login: (token: string) => void;
     logout: () => void;
     logoutWithAPI: () => Promise<void>;
+    setHasHydrated : (state : boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
     persist(
         (set) => ({
             // Initial State Values
-            isLoggedIn: false,
             accessToken: null,
+            _hasHydrated: false,
+
 
             // Login function - just update state
-            login: (token: string) => set({
-                isLoggedIn: true,
-                accessToken: token
-            }),
+            login: (token: string) => set({ accessToken: token }),
 
             // Logout function - just clear state (used by interceptor)
-            logout: () => set({
-                isLoggedIn: false,
-                accessToken: null
-            }),
+            logout: () => set({ accessToken: null }),
+
+            // Helper to update hdration state
+            setHasHydrated: (state) => set({ _hasHydrated : state }),
 
             // Logout with API call - clears cookie on backend
             logoutWithAPI: async () => {
@@ -44,13 +43,17 @@ export const useAuthStore = create<AuthState>()(
                 }
                 // Always clear local state regardless of API result
                 set({
-                    isLoggedIn: false,
                     accessToken: null
                 });
             }
         }),
         {
             name: 'auth-storage', // key in localStorage
+            storage : createJSONStorage(()=> localStorage),
+
+            onRehydrateStorage: () => (state) => {
+                state?.setHasHydrated(true);
+            }
         }
     )
 );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ServerSidebar } from "@/feature/server/sidebar";
 import { RoomSidebar } from "@/feature/server/room";
@@ -71,23 +71,27 @@ export default function Page() {
     const router = useRouter();
     const { activeServerId } = useServerStore();
     const { activeRoomId } = useRoomStore();
-    const { isLoggedIn, accessToken } = useAuthStore();
+    const { accessToken, _hasHydrated } = useAuthStore();
 
-    // Redirect to login if not authenticated
     useEffect(() => {
-        if (!accessToken && !isLoggedIn) {
+        if ( _hasHydrated && !accessToken) {
             router.push("/login");
         }
-    }, [accessToken, isLoggedIn, router]);
+    }, [accessToken, _hasHydrated, router]);
 
     // Show loading while checking auth
-    if (!accessToken) {
+    if (!_hasHydrated) {
         return (
             <div className="flex h-screen bg-neutral-900 items-center justify-center">
                 <div className="w-8 h-8 border-2 border-neutral-600 border-t-indigo-500 rounded-full animate-spin" />
             </div>
         );
     }
+
+    if(!accessToken) return null;
+
+
+
 
     return (
         <div className="flex h-screen bg-neutral-900">
