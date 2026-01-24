@@ -4,12 +4,15 @@ import http from 'http';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { Server } from 'socket.io';
+import { Socket } from 'socket.io';
 import logger from './config/logger.js';
 import { connectDB } from './config/db.js';
 import indexRouter from '../src/routes/index.route.js';
 import { socketAuth } from './middleware/socketAuth.js';
 import { ValidationError } from './helper/errorClass.js';
 import { errorHandler } from './middleware/errorMiddleware.js';
+import { roomHandler } from './socket/roomHandler.js';
+import { messageHandler } from './socket/messageHandler.js';
 
 const PORT = 5000;
 
@@ -44,11 +47,13 @@ const io = new Server(server, {
 // Apply socket authentication middleware
 io.use(socketAuth);
 
-// Start connection and handle socket events
-io.on("connection", (socket) => {
-    logger.info(`User connected with socketId: ${socket.id}`);
+const onConnection = (socket : Socket) =>  {
+    roomHandler(io, socket);
+    messageHandler(io, socket);
+}
 
-});
+// Start connection and handle socket events
+io.on("connection", onConnection);
 
 // start Server
 server.listen(PORT, () => {

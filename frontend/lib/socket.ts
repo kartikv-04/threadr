@@ -1,21 +1,19 @@
 import { io } from "socket.io-client";
+import { Message } from "@/feature/chat/type";
 
 const socket = io("http://localhost:5000");
 
-// function to send message
 export function sendMessage(roomId : string, msg : string){
     socket.emit("send:message", ({roomId, msg}));
-
 }
 
-export function receiveMessage(callbackFn: (msg: string) => void) {
-    const handler = (msg: string) => {
+export function receiveMessage(callbackFn: (msg: Message) => void) {
+    const handler = (msg: Message) => {
         callbackFn(msg);
     };
     
     socket.on("send:message:room", handler);
     
-    // Return cleanup function
     return () => socket.off("send:message:room", handler);
 }
 
@@ -26,7 +24,3 @@ export function joinRoom(roomId : string){
 export function leaveRoom(roomId : string){
     socket.emit("leave:room", roomId);
 }
-
-
-
-

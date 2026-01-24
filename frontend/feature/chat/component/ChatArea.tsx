@@ -4,6 +4,7 @@ import { useGetMessages, useSendMessage } from "../hook";
 import ChatHeader from "./ChatHeader";
 import MessageList from "./MessageList";
 import MessageInput from "./MessageInput";
+import { useMessageStore } from "@/store/MessageStore";
 
 interface ChatAreaProps {
     serverId: string;
@@ -13,8 +14,9 @@ interface ChatAreaProps {
 }
 
 const ChatArea = ({ serverId, roomId, roomName, currentUserId }: ChatAreaProps) => {
-    const { data, isLoading, error } = useGetMessages(serverId, roomId);
+    const { isLoading, error } = useGetMessages(serverId, roomId);
     const { mutate: sendMessage, isPending: isSending } = useSendMessage();
+    const { messages } = useMessageStore();
 
     const handleSendMessage = (content: string) => {
         sendMessage({
@@ -46,7 +48,7 @@ const ChatArea = ({ serverId, roomId, roomName, currentUserId }: ChatAreaProps) 
 
             {/* Messages */}
             <MessageList
-                messages={data?.messages || []}
+                messages={messages}
                 isLoading={isLoading}
                 currentUserId={currentUserId}
             />
