@@ -4,6 +4,7 @@ import logger from "../config/logger.js"
 import { NotFoundError, UnauthorizedError, ValidationError } from "../helper/errorClass.js";
 import { memberModel } from "../models/member.model.js";
 import { roomModel } from "../models/room.model.js";
+import { createRoom } from "./room.service.js";
 
 
 export const createServer = async (data: CreateServerRequest): Promise<NewServerResponse> => {
@@ -35,6 +36,16 @@ export const createServer = async (data: CreateServerRequest): Promise<NewServer
     })
 
     logger.debug("New Member is created");
+
+    // Create Default general room For each server created
+    const roomData = {
+        userId : data.userId,
+        roomName : "general",
+        serverId : newServer._id.toString()
+    };
+
+    const newGeneralRoom = await createRoom(roomData);
+    logger.debug("General room created");
 
     // Populate createdBy and members in one
     await newServer.populate("createdBy", "username");

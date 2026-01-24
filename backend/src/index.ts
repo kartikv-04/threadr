@@ -8,7 +8,6 @@ import logger from './config/logger.js';
 import { connectDB } from './config/db.js';
 import indexRouter from '../src/routes/index.route.js';
 import { socketAuth } from './middleware/socketAuth.js';
-import { socketHandler } from './socket/socket.js';
 import { ValidationError } from './helper/errorClass.js';
 import { errorHandler } from './middleware/errorMiddleware.js';
 
@@ -48,7 +47,7 @@ io.use(socketAuth);
 // Start connection and handle socket events
 io.on("connection", (socket) => {
     logger.info(`User connected with socketId: ${socket.id}`);
-    socketHandler(io, socket);
+
 });
 
 // start Server
