@@ -1,21 +1,38 @@
 import { Server } from "socket.io";
 import logger from "../config/logger.js";
-import type { Socket } from "socket.io";
+import type { AuthenticatedSocket } from "../types/types.js";
+import { sendMessageService } from "../services/message.service.js";
 
-export const messageHandler = (io : Server, socket : Socket) => {
+export const messageHandler = (io: Server, socket: AuthenticatedSocket) => {
 
-    // user recieves message from client
-    socket.on("send:message", ( {roomId, msg} : {roomId : string, msg : string}) => {
-        logger.info(`Message recieved : ${msg}`);
+    socket.on("send:message", async ({ serverId, roomId, msg }: { serverId: string, roomId: string, msg: string }) => {
+        try {
+            const userId = socket.user?._id.toString();
 
-        // User emits message to entire room currently in 
-        socket.to(roomId).emit("send:message:room", ({roomId, msg}));
-    })
+            if (!userId) {
+                logger.warn(`Unauthenticated socket tried to send message: ${socket.id}`);
+                socket.emit("error", { message: "Not authenticated" });
+                return;
+            }
+
+            // Save message to database
+            const newMessage = await sendMessageService({
+                userId,
+                serverId,
+                roomId,
+                content: msg
+            });
+
+            // Broadcast to everyone in the room (including sender)
+            io.to(roomId).emit("send:message:room", newMessage);
+            
+        } catch (error: any) {
+            logger.error(`Failed to send message: ${error.message}`);
+            socket.emit("error", { message: "Failed to send message" });
+        }
+    });
 
     socket.on("disconnect", () => {
-    logger.info(`Socket ${socket.id} disconnected`);
-})
-}
-
-
-
+        logger.info(`Socket ${socket.id} disconnected`);
+    });
+};

@@ -1,3 +1,17 @@
+import { Socket } from "socket.io";
+import { Types } from "mongoose";
+
+// ==========================================
+// SOCKET TYPES
+// ==========================================
+export interface AuthenticatedSocket extends Socket {
+    user?: {
+        _id: Types.ObjectId;
+        username: string;
+        email: string;
+        name: string;
+    }
+}
 
 
 // ==========================================
@@ -38,7 +52,7 @@ export type SignupResponse = {
 export type SigninResponse = {
     user: {
         id: string; // serialized ObjectId
-        username: string;
+        username:string;
         name: string;
         email: string;
         accessToken: string;
@@ -153,7 +167,7 @@ export type MessageResponse = {
     messageId: string;
     content: string;
     userId: string; // ID of the sender (User Model)
-    // username: string; // Display name
+    username: string; // Display name
     isEdited: boolean;
     createdAt: Date;
     // Optional: Only include if you need to show Reply UI

@@ -31,22 +31,23 @@ export const sendMessageService = async (data: SendMessageRequest): Promise<Mess
     const newMessage = await messageModel.create({
         content: data.content,
         sentBy: data.userId,
-        room: data.roomId
+        room: data.roomId,
+        server: data.serverId
     })
 
     // Populate message model to get username
-    await newMessage.populate("sentBy", "username");
+    const populatedMessage = await newMessage.populate<{ sentBy: { username: string } }>("sentBy", "username");
 
     // Return messageId, isEdited, sentBy
-    const populated = newMessage as any
+    const populated = populatedMessage as any
 
     // Return with valid types and info
     return {
         messageId: newMessage._id.toString(),
         content: populated.content,
         userId: data.userId.toString(),
+        username: populated.sentBy.username,
         isEdited: newMessage.isEdited,
-        // sentBy: populated.sentBy,
         createdAt: populated.createdAt
     }
 }
