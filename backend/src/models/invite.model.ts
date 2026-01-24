@@ -53,6 +53,4 @@ inviteSchema.index({ code: 1 });
 inviteSchema.index({ serverId: 1 });
 
 // 4. Export the Model
-const Invite = mongoose.models.Invite || mongoose.model<Invite>("Invite", inviteSchema);
-
-export default Invite;
+export const inviteModel = mongoose.model<Invite>("Invite", inviteSchema);

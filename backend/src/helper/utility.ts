@@ -88,3 +88,26 @@ export const newPersonalServer = async (userId: string): Promise<PersonalServer>
         throw new Error("Personal server could not be created!");
     }
 }
+
+export function calculateExpiryDate(expiresIn?: string): Date | null {
+  if (!expiresIn || expiresIn === "never") {
+    return null; // link lasts forever
+  }
+
+  const now = new Date(); // Start with "Now"
+
+  switch (expiresIn) {
+    case "30m":
+      return new Date(now.getTime() + 30 * 60 * 1000);
+    case "1h":
+      return new Date(now.getTime() + 60 * 60 * 1000);
+    case "6h":
+      return new Date(now.getTime() + 6 * 60 * 60 * 1000);
+    case "1d":
+      return new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    case "7d":
+      return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    default:
+      return null;
+  }
+}
