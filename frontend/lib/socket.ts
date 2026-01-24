@@ -1,7 +1,12 @@
 import { io } from "socket.io-client";
 import { Message } from "@/feature/chat/type";
 
-const socket = io("http://localhost:5000");
+const URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+
+const socket = io(URL, {
+    autoConnect : false,
+    withCredentials : true
+});
 
 export function sendMessage(roomId : string, msg : string){
     socket.emit("send:message", ({roomId, msg}));

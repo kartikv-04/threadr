@@ -56,6 +56,7 @@ export const createServer = async (data: CreateServerRequest): Promise<NewServer
     // Create clean Response JSON
     return {
         serverId: populatedResponse._id,
+        roomId: newGeneralRoom.roomId,
         serverName: populatedResponse.name,
         createdBy: populatedResponse.createdBy.username as string,
         createdAt: populatedResponse.createdAt
@@ -79,15 +80,15 @@ export const getServerList = async (data: GetServerRequest): Promise<GetServerRe
         logger.info("user is not yet part of any server");
         throw new NotFoundError("No server found!");
     }
-    
+
     const formatedServer = serverArray.map( list => {
         const server = list.server as any as { _id : string, name: string; icon: string };
-             return {
+        return {
                 serverId : server._id.toString(),
-                name: server.name,
-                icon: server.icon
-            };
-        
+            name: server.name,
+            icon: server.icon
+        };
+
     })
 
     return formatedServer as any;
@@ -115,7 +116,7 @@ export const deleteServers = async (data: DeleteServerReqest): Promise<void> => 
         serverModel.deleteOne({_id : data.serverId}),  // Delete Server
         roomModel.deleteMany({server : data.serverId}),  // Deletes all roomDoc where they are part of these server
         memberModel.deleteMany({server : data.serverId}) // Deletes All member who were part of these server
-        
+
     ])
 
 }

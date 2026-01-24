@@ -1,5 +1,5 @@
 import { api } from "../../../lib/api";
-import { GetRoomResponse, NewRoomRequest, NewRoomResponse } from "./type";
+import { GetRoomResponse, NewRoomRequest, NewRoomResponse, GenerateInviteResponse, GetInviteInfoResponse, JoinServerRequest } from "./type";
 
 export const getRooms = async (serverId: string): Promise<GetRoomResponse> => {
     try {
@@ -25,6 +25,34 @@ export const createRoom = async (data: NewRoomRequest): Promise<NewRoomResponse>
             serverId: result.data.data.serverId,
             createdAt: result.data.data.createdAt
         };
+    } catch (error: any) {
+        throw error;
+    }
+}
+
+export const generateInvite = async (serverId: string): Promise<GenerateInviteResponse> => {
+    try {
+        const result = await api.post(`/s/${serverId}/invite`);
+        // Backend returns: { success: true, message: "...", data: { url, code, expiresAt, isPermanent } }
+        return result.data.data;
+    } catch (error: any) {
+        throw error;
+    }
+}
+
+export const getInviteInfo = async (code: string): Promise<GetInviteInfoResponse> => {
+    try {
+        const result = await api.get(`/invite/${code}`);
+        return result.data.data;
+    } catch (error: any) {
+        throw error;
+    }
+}
+
+export const joinServer = async (data: JoinServerRequest): Promise<{ serverId: string }> => {
+    try {
+        const result = await api.post(`/invite/join`, data);
+        return result.data.data;
     } catch (error: any) {
         throw error;
     }

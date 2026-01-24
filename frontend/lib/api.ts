@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from "axios";
 import { useAuthStore } from "@/store/AuthStore";
 
-const API_BASE_URL = "http://localhost:5000/api/v1";
+const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 // Centralized Axios Instance
 const api: AxiosInstance = axios.create({

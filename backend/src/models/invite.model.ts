@@ -49,7 +49,6 @@ const inviteSchema = new Schema<Invite>(
 );
 
 // 3. Create Indexes (Speed Optimization)
-inviteSchema.index({ code: 1 });
 inviteSchema.index({ serverId: 1 });
 
 // 4. Export the Model

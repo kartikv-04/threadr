@@ -34,7 +34,7 @@ export const useAuthStore = create<AuthState>()(
             logoutWithAPI: async () => {
                 try {
                     await axios.post(
-                        'http://localhost:5000/api/v1/u/logout',
+                        `${process.env.NEXT_BACKEND_URL}/api/v1/u/logout}`,
                         {},
                         { withCredentials: true }
                     );

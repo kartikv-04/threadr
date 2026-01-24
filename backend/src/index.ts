@@ -14,7 +14,7 @@ import { errorHandler } from './middleware/errorMiddleware.js';
 import { roomHandler } from './socket/roomHandler.js';
 import { messageHandler } from './socket/messageHandler.js';
 
-const PORT = 5000;
+const PORT = 5001;
 
 // Initializaton and Middleware
 const app = express();

@@ -12,7 +12,6 @@ import { inviteModel } from "../models/invite.model.js";
 import { CLIENT_URL } from "../config/env.js";
 import { calculateExpiryDate } from "../helper/utility.js";
 import { serverModel } from "../models/server.model.js";
-import { userModel } from "../models/user.model.js";
 
 
 export const generateInvite = async (data: GenerateInviteRequest): Promise<GenerateInviteResponse> => {
@@ -24,7 +23,7 @@ export const generateInvite = async (data: GenerateInviteRequest): Promise<Gener
     }
 
     // Check user is existing member and server exist
-    const isMember = await memberModel.find({ user: data.userId, server: data.serverId });
+    const isMember = await memberModel.findOne({ user: data.userId, server: data.serverId });
     if (!isMember) {
         logger.warn("Unauthorized to access resource");
         throw new UnauthorizedError("Unauthorized to access resource");
@@ -98,6 +97,8 @@ export const validateInvite = async (code: string): Promise<InviteValidResponse>
         throw new NotFoundError("Server no longer exists");
     }
 
+    logger.debug("Ivite tried to join");
+
 
     // Create proper response object
     const inviteRes = {
@@ -123,7 +124,7 @@ export const joinInvite = async (data: JoinInviteReqest): Promise<{ serverId: st
     if (!validInvite) {
         throw new NotFoundError("Invalid Invite Code");
     }
-    
+
     // Check Expiry (Crucial for security)
     if (validInvite.expiresAt && new Date() > validInvite.expiresAt) {
         throw new ValidationError("Invite expired");
@@ -136,14 +137,14 @@ export const joinInvite = async (data: JoinInviteReqest): Promise<{ serverId: st
     }
 
     // Check if user is ALREADY a member (Prevent Duplicates)
-    const existingMember = await memberModel.findOne({ 
-        user: data.userId, 
-        server: data.serverId 
+    const existingMember = await memberModel.findOne({
+        user: data.userId,
+        server: data.serverId
     });
 
     if (existingMember) {
         // Just return success if user already in
-        return { serverId: data.serverId }; 
+        return { serverId: data.serverId };
     }
 
     // Create Member
@@ -157,6 +158,6 @@ export const joinInvite = async (data: JoinInviteReqest): Promise<{ serverId: st
     // Update Invite Uses Count
     await inviteModel.updateOne({ code: data.inviteCode }, { $inc: { uses: 1 } });
 
-    return { serverId : data.serverId };
+    return { serverId: data.serverId };
 }
 

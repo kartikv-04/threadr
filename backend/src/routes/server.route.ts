@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { newServer, serverName, deleteServer } from "../controllers/server.controller.js";
-import { generateInvite } from "../services/invite.service.js";
+import { createInviteController } from "../controllers/invite.controller.js";
 
 
 const router = Router();
@@ -8,6 +8,6 @@ const router = Router();
 router.get('/',  serverName); // GET 
 router.post('/',  newServer); // POST 
 router.delete('/:serverId', deleteServer); // DELETE
-router.post('/:serverId/invite', generateInvite); // POST
+router.post('/:serverId/invite', createInviteController); // POST
 
 export default router;

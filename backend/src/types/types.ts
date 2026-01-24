@@ -74,6 +74,7 @@ export type CreateServerRequest = {
 
 export type NewServerResponse = {
     serverId: string;
+    roomId: string;
     serverName: string;
     createdBy: string;
     createdAt: Date;
@@ -119,14 +120,14 @@ export type GenerateInviteResponse = {
 
 export type InviteValidResponse = {
     serverId: string,
-    serverName : string,
-    serverIcon : string,
+    serverName: string,
+    serverIcon: string,
 }
 
 export type JoinInviteReqest = {
-    userId : string,
-    serverId : string,
-    inviteCode : string
+    userId: string,
+    serverId: string,
+    inviteCode: string
 }
 
 
