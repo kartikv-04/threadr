@@ -199,7 +199,8 @@ export type MessageResponse = {
     username: string; // Display name
     isEdited: boolean;
     createdAt: Date;
-    // Optional: Only include if you need to show Reply UI
+    roomId: string;
+    serverId: string;
     replyTo?: string;
 }
 

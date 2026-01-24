@@ -71,7 +71,7 @@ export default function Page() {
     const router = useRouter();
     const { activeServerId } = useServerStore();
     const { activeRoomId } = useRoomStore();
-    const { accessToken, _hasHydrated } = useAuthStore();
+    const { accessToken, userId, _hasHydrated } = useAuthStore();
 
     useEffect(() => {
         if ( _hasHydrated && !accessToken) {
@@ -111,6 +111,7 @@ export default function Page() {
                     serverId={activeServerId}
                     roomId={activeRoomId}
                     roomName="general"
+                    currentUserId={userId || undefined}
                 />
             ) : (
                 <div className="flex-1 flex items-center justify-center text-white/40">

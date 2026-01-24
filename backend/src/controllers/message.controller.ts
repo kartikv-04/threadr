@@ -9,7 +9,7 @@ import { ValidationError } from "../helper/errorClass.js";
 // 1. Send Message Controller
 export const sendMessage = asyncHandler(async (req: Request, res: Response) => {
     // 1 Destructure req body
-    const userId = (req as any)?.user.id;
+    const userId = (req as any)?.user?.id?.toString();
     const { serverId, roomId } = req.params;
     const { content } = req.body;
 
@@ -17,9 +17,9 @@ export const sendMessage = asyncHandler(async (req: Request, res: Response) => {
     const validatedData = SendMessageSchema.safeParse({ userId, serverId, roomId, content });
 
     // Handle Error
-    if(!validatedData.success){
-            throw new ValidationError("Validation Failed!")
-        }
+    if (!validatedData.success) {
+        throw new ValidationError("Validation Failed!")
+    }
 
     //  Send Message
     const result = await sendMessageService(validatedData.data);
@@ -37,7 +37,7 @@ export const sendMessage = asyncHandler(async (req: Request, res: Response) => {
 //  Recieve Message
 export const getMessage = asyncHandler(async (req: Request, res: Response) => {
     //  Get parameters from query (RESTful approach for GET requests)
-    const userId = (req as any)?.user.id;
+    const userId = (req as any)?.user?.id?.toString();
 
     // Get serverId and roomId from params
     const { serverId, roomId } = req.params;
@@ -47,8 +47,8 @@ export const getMessage = asyncHandler(async (req: Request, res: Response) => {
 
     // Hanlde Error
     if(!validatedData.success){
-            throw new ValidationError("Validation Failed!")
-        }
+        throw new ValidationError("Validation Failed!")
+    }
 
     //  Get page and limit parameter from and handle pagination
     const page = req.query.page ? parseInt(req.query.page as string) : 1;

@@ -39,8 +39,9 @@ app.use(errorHandler);
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: "*",
-        methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+        origin: "http://localhost:3000",
+        methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+        credentials: true
     }
 });
 

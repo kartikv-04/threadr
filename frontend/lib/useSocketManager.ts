@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { useRoomStore } from '@/store/RoomStore';
 import { useMessageStore } from '@/store/MessageStore';
-import { joinRoom, leaveRoom, receiveMessage } from './socket';
+import { joinRoom, leaveRoom, receiveMessage, connectSocket, disconnectSocket } from './socket';
 import { useGetMessages } from '@/feature/chat/hook';
 import { useAuthStore } from '@/store/AuthStore';
 import { useServerStore } from '@/store/ServerStore';
@@ -12,27 +12,43 @@ import { Message } from '@/feature/chat/type';
 export const useSocketManager = () => {
     const { activeRoomId } = useRoomStore();
     const { activeServerId } = useServerStore();
+    const { accessToken } = useAuthStore();
     const { addMessage, setMessages, clearMessages } = useMessageStore();
     const previousRoomIdRef = useRef<string | null>(null);
 
-    const { data: initialMessages, isSuccess } = useGetMessages(activeServerId, activeRoomId);
+    const { data: initialMessages, isSuccess, isFetching } = useGetMessages(activeServerId, activeRoomId);
 
+    // Socket Connection
     useEffect(() => {
-        // Set initial messages when the room changes and data is fetched
+        if (accessToken) {
+            connectSocket(accessToken);
+        }
+        return () => {
+            // Optional: only disconnect on full unmount if needed
+        };
+    }, [accessToken]);
+
+    // Message Sync
+    useEffect(() => {
         if (isSuccess && initialMessages?.messages) {
+            console.log("Setting initial messages:", initialMessages.messages.length);
             setMessages(initialMessages.messages);
-        } else {
-            // Clear messages if there are no messages or on room change
+        }
+    }, [isSuccess, initialMessages, setMessages]);
+
+    // Clear messages when changing rooms
+    useEffect(() => {
+        if (activeRoomId !== previousRoomIdRef.current) {
+            console.log("Room changed, clearing messages");
             clearMessages();
         }
-    }, [isSuccess, initialMessages, setMessages, clearMessages, activeRoomId]);
+    }, [activeRoomId, clearMessages]);
 
+    // Room and Message Listeners
     useEffect(() => {
         const previousRoomId = previousRoomIdRef.current;
 
-        // If there's a new room, join it
         if (activeRoomId && activeRoomId !== previousRoomId) {
-            // Leave the previous room if there was one
             if (previousRoomId) {
                 leaveRoom(previousRoomId);
             }
@@ -40,17 +56,16 @@ export const useSocketManager = () => {
             previousRoomIdRef.current = activeRoomId;
         }
 
-        // Setup message receiver
         const cleanup = receiveMessage((message: Message) => {
-            addMessage(message);
+            console.log("New message received via socket:", message);
+            // Only add if it belongs to current room
+            if (message.roomId === activeRoomId) {
+                addMessage(message);
+            }
         });
 
         return () => {
             cleanup();
-            // On component unmount, leave the current room
-            if (activeRoomId) {
-                leaveRoom(activeRoomId);
-            }
         };
     }, [activeRoomId, addMessage]);
 };

@@ -14,10 +14,10 @@ type TokenPair = {
 }
 
 type PersonalServer = {
-    serverId : string,
-    roomId : string,
-    serverName: string,
-    roomName: string
+  serverId: string,
+  roomId: string,
+  serverName: string,
+  roomName: string
 
 }
 
@@ -50,35 +50,35 @@ export const newPersonalServer = async (userId: string): Promise<PersonalServer>
 
     // Create a default Personal Welcome Server with Welcome room in it
     const serverData = {
-            userId : userId,
-            serverName : "Welcome"
+      userId: userId,
+      serverName: "Welcome"
     }
 
     const personalServer = await createServer(serverData);
 
     logger.debug(`Personal Server has been created for user : ${userId}`);
 
-        // Create a New Room as general name
-        const newRoom : NewRoomRequest = {
-            userId : userId,
-            roomName : "general",
-            serverId : personalServer.serverId,
-        }
+    // Create a New Room as general name
+    const newRoom: NewRoomRequest = {
+      userId: userId,
+      roomName: "general",
+      serverId: personalServer.serverId,
+    }
 
-        const firstRoom = await createRoom(newRoom);
-        logger.debug("New room Created");
+    const firstRoom = await createRoom(newRoom);
+    logger.debug("New room Created");
 
-        if(!firstRoom){
-            logger.info("Error creatig New Room for Server")
-            throw new Error("Error in creating new room for server");
-        }
+    if (!firstRoom) {
+      logger.info("Error creatig New Room for Server")
+      throw new Error("Error in creating new room for server");
+    }
 
     // return Created Server's Name only
     return {
-            serverId : personalServer.serverId,
-            roomId : firstRoom.roomId,
+      serverId: personalServer.serverId,
+      roomId: firstRoom.roomId,
       serverName: personalServer.serverName,
-            roomName: (firstRoom).roomName
+      roomName: (firstRoom).roomName
 
     };
 

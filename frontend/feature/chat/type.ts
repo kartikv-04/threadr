@@ -7,6 +7,8 @@ export type Message = {
     username: string;
     isEdited: boolean;
     createdAt: string;
+    roomId?: string;
+    serverId?: string;
 };
 
 // Request Types

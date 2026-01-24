@@ -3,6 +3,7 @@ import { serverModel } from "../models/server.model.js"
 import { messageModel } from "../models/message.model.js"
 import type { GetMessagesRequest, MessageResponse, SendMessageRequest } from "../types/types.js"
 import { roomModel } from "../models/room.model.js"
+import { memberModel } from "../models/member.model.js"
 import { NotFoundError, UnauthorizedError, ValidationError } from "../helper/errorClass.js";
 
 
@@ -21,10 +22,10 @@ export const sendMessageService = async (data: SendMessageRequest): Promise<Mess
     }
 
     // if server exist check is user is member or not
-    const isMember = findServer?.members.some(id => id.toString() === data.userId);
+    const isMember = await memberModel.findOne({ user: data.userId, server: data.serverId });
     if (!isMember) {
-        logger.warn(`Unauthorized attempt to get messages by user with ${data.userId}`);
-        throw new UnauthorizedError("Unauthorized request to view message");
+        logger.warn(`Unauthorized attempt to send message by user with ${data.userId}`);
+        throw new UnauthorizedError("You are not a member of this server!");
     }
 
     // Save the message into model and update the room field
@@ -48,7 +49,9 @@ export const sendMessageService = async (data: SendMessageRequest): Promise<Mess
         userId: data.userId.toString(),
         username: populated.sentBy.username,
         isEdited: newMessage.isEdited,
-        createdAt: populated.createdAt
+        createdAt: populated.createdAt,
+        roomId: data.roomId,
+        serverId: data.serverId
     }
 }
 
@@ -67,8 +70,8 @@ export const recieveMessage = async (data: GetMessagesRequest): Promise<MessageR
     }
 
     // 3. Check if User is part of the server or not
-    const ifUser = ifServer.members.some(id => id.toString() === data.userId);
-    if (!ifUser) {
+    const isMember = await memberModel.findOne({ user: data.userId, server: data.serverId });
+    if (!isMember) {
         logger.warn(`Unauthorized attempt to view message with userid : ${data.userId}`);
         throw new UnauthorizedError("You are not memebr of these server!");
     }
@@ -102,7 +105,8 @@ export const recieveMessage = async (data: GetMessagesRequest): Promise<MessageR
         userId: msg.sentBy._id.toString(),
         username: msg.sentBy.username,
         isEdited: msg.isEdited,
-        createdAt: msg.createdAt
-
+        createdAt: msg.createdAt,
+        roomId: msg.room.toString(),
+        serverId: msg.server.toString()
     }))
 }

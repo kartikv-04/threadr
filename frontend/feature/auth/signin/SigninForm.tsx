@@ -22,7 +22,7 @@ import { useRouter } from "next/navigation";
 const SigninForm = () => {
     const router = useRouter();
     const { mutate } = useSignIn();
-    const loginUser = useAuthStore((state)=>state.login);
+    const loginUser = useAuthStore((state) => state.login);
 
     const [formData, setFormData] = useState<SignInPayload>({
         email: "",
@@ -44,13 +44,14 @@ const SigninForm = () => {
 
                 // Get the Token
                 const token = response.data?.user?.accessToken;
-                if(token){
+                const userId = response.data?.user?.id;
+                if (token && userId) {
                     // setAuthToken(token);
-                    loginUser(token);
+                    loginUser(token, userId);
                     console.log("token Saved SuccessFully");
                     // Redirect to Main Page
                     router.push("/");
-                }   
+                }
             },
             // OnError
             onError: (error) => {

@@ -93,7 +93,7 @@ const messageSchema = new mongoose.Schema<Message>({
 }, { timestamps: true });
 
 // Compound indexes
-messageSchema.index({ room: 1, createAt: -1 });  // Get Messages in room sorted by time
+messageSchema.index({ room: 1, createdAt: -1 });  // Get Messages in room sorted by time
 messageSchema.index({ sentBy: 1, createdAt: -1 }); // Get users message
 messageSchema.index({ isPinned: 1, createdAt: 1 }); // Get Pinned Messages
 

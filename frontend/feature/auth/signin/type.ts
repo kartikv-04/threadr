@@ -7,6 +7,7 @@ export type SignInResponse = {
     data: {
         refreshToken: string,
         user : {
+            id: string,
             accessToken : string,
             email  :string,
             name : string,

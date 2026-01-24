@@ -151,7 +151,7 @@ export const joinInvite = async (data: JoinInviteReqest): Promise<{ serverId: st
     await memberModel.create({
         server: data.serverId,
         user: data.userId,
-        role: "guest", // Default to guest/member
+        role: ["member"], // Match the model enum ["admin", "member"]
         isBanned: false
     });
 

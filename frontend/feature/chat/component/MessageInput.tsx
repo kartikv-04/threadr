@@ -21,6 +21,7 @@ const MessageInput = ({
 
     const handleSend = () => {
         const trimmed = message.trim();
+        console.log(message)
         if (!trimmed || disabled) return;
 
         onSend(trimmed);

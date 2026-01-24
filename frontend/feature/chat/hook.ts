@@ -24,7 +24,7 @@ export const useSendMessage = () => {
         setIsSending(true);
         try {
             // Fire-and-forget socket event
-            socketSendMessage(data.roomId, data.content);
+            socketSendMessage(data.serverId, data.roomId, data.content);
         } catch (error) {
             console.error("Failed to send message", error);
         } finally {
