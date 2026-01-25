@@ -36,7 +36,7 @@ const MessageInput = ({
     };
 
     return (
-        <div className="px-4 pb-6 pt-2">
+        <div className="px-4 py-2">
             <div className={cn(
                 "flex items-center gap-2 rounded-lg",
                 "bg-neutral-700/50",

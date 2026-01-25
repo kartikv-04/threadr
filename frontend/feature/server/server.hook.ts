@@ -1,15 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getServer, createServer } from "./server.api";
+import { getServer, createServer, deleteServer } from "./server.api";
 import { useAuthStore } from "@/feature/auth/AuthStore";
 import { CreateServerRequest } from "./server.type";
 
 export const useGetServer = () => {
     const token = useAuthStore(state => state.accessToken);
-    return useQuery({ 
-        queryKey: ['servers'], 
-        queryFn: getServer, 
+    return useQuery({
+        queryKey: ['servers'],
+        queryFn: getServer,
         enabled: !!token,
-        staleTime: 1000 * 60 * 5, 
+        staleTime: 1000 * 60 * 5,
     })
 }
 
@@ -20,6 +20,17 @@ export const useCreateServer = () => {
         mutationFn: (data: CreateServerRequest) => createServer(data),
         onSuccess: () => {
             // Invalidate and refetch servers list after creation
+            queryClient.invalidateQueries({ queryKey: ['servers'] });
+        }
+    });
+}
+
+export const useDeleteServer = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (serverId: string) => deleteServer(serverId),
+        onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['servers'] });
         }
     });

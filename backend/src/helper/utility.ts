@@ -96,12 +96,15 @@ export function calculateExpiryDate(expiresIn?: string): Date | null {
 }
 
 export const generateUsername = async (name: string): Promise<string> => {
-    let username = name.toLowerCase().replace(/\s/g, '');
-    let user = await userModel.findOne({ username });
-    while (user) {
-        const random = Math.floor(Math.random() * 1000);
-        username = `${username}${random}`;
-        user = await userModel.findOne({ username });
-    }
-    return username;
+  const base = name.trim().toLowerCase().replace(/\s+/g, '_');
+  const randomSuffix = Math.floor(Math.random() * 9000) + 1000;
+  let username = `${base}_${randomSuffix}`;
+
+  let exists = await userModel.findOne({ username });
+  while (exists) {
+    const nextSuffix = Math.floor(Math.random() * 9000) + 1000;
+    username = `${base}_${nextSuffix}`;
+    exists = await userModel.findOne({ username });
+  }
+  return username;
 }

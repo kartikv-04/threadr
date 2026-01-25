@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getRooms, createRoom, generateInvite, getInviteInfo, joinServer } from "./api";
+import { getRooms, createRoom, generateInvite, getInviteInfo, joinServer, deleteRoom } from "./api";
 import { useAuthStore } from "@/feature/auth/AuthStore";
 import { NewRoomRequest, JoinServerRequest } from "./type";
 
@@ -45,6 +45,16 @@ export const useJoinServer = () => {
         mutationFn: (data: JoinServerRequest) => joinServer(data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['servers'] });
+        }
+    });
+}
+
+export const useDeleteRoom = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ serverId, roomId }: { serverId: string; roomId: string }) => deleteRoom(serverId, roomId),
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries({ queryKey: ['rooms', variables.serverId] });
         }
     });
 }

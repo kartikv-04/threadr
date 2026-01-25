@@ -30,10 +30,8 @@ export const createServer = async (payload: CreateServerRequest): Promise<NewSer
         createdAt: server.createdAt
     };
 
-
-
 }
 
-
-
-
+export const deleteServer = async (serverId: string): Promise<void> => {
+    await api.delete(`/s/${serverId}`);
+}

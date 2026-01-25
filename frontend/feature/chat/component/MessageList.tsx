@@ -27,7 +27,7 @@ const MessageList = ({
   const bottomRef = useRef<HTMLDivElement>(null);
   const topRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  
+
   // State to track if  auto-scroll
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
 
@@ -47,10 +47,10 @@ const MessageList = ({
           // Save current scroll height to restore position after loading
           const container = scrollContainerRef.current;
           if (container) {
-             const currentScrollHeight = container.scrollHeight;
-             
-             loadMore();
-             
+            const currentScrollHeight = container.scrollHeight;
+
+            loadMore();
+
           }
         }
       },
@@ -68,7 +68,7 @@ const MessageList = ({
   const handleScroll = () => {
     if (!scrollContainerRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
-    
+
     // If user is near bottom (within 100px), enable auto-scroll
     const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
     setShouldAutoScroll(isNearBottom);
@@ -90,7 +90,7 @@ const MessageList = ({
     >
       {/* Top Anchor for Infinite Scroll */}
       <div ref={topRef} className="h-4 w-full flex justify-center">
-         {isLoadingMore && <Loader2 className="w-4 h-4 animate-spin text-neutral-500" />}
+        {isLoadingMore && <Loader2 className="w-4 h-4 animate-spin text-neutral-500" />}
       </div>
 
       {/* Welcome Message (Only show if no more history to load) */}
@@ -116,16 +116,15 @@ const MessageList = ({
             !prevMessage ||
             prevMessage.userId !== message.userId ||
             new Date(message.createdAt).getTime() -
-              new Date(prevMessage.createdAt).getTime() >
-              5 * 60 * 1000;
+            new Date(prevMessage.createdAt).getTime() >
+            5 * 60 * 1000;
 
           return (
             <MessageItem
-              key={`${message.messageId}-${index}`} 
+              key={`${message.messageId}-${index}`}
               message={message}
               isOwn={message.userId === currentUserId}
               showAvatar={showAvatar}
-              username={username}
             />
           );
         })}

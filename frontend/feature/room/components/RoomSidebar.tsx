@@ -2,27 +2,34 @@
 
 import { useCallback, useEffect, useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
-// Added UserPlus, LogOut, Trash for the menu
 import {
   Hash,
   ChevronDown,
   Plus,
   Settings,
-  X,
   Mic,
   Headphones,
   Cog,
   UserPlus,
   Trash,
   LogOut,
+  User,
 } from "lucide-react";
-import { useGetRooms } from "../hook";
+import { useGetRooms, useDeleteRoom, useCreateRoom } from "../hook";
 import { useServerStore } from "@/feature/server/ServerStore";
 import { useRoomStore } from "@/store/RoomStore";
 import { joinRoom } from "@/lib/socket";
 import { CreateRoomModal } from "./CreateRoomModal";
 import { InviteModal } from "./InviteModal";
-import { useAuthStore } from "@/feature/auth/AuthStore";
+import { UserPanel } from "@/components/UserPanel";
+import { useDeleteServer } from "@/feature/server/server.hook";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface Room {
   roomId: string;
@@ -30,54 +37,72 @@ interface Room {
   serverId: string;
 }
 
-interface RoomSidebarProps {
-  serverName?: string;
-}
-
-// Room Item Component (No changes)
+// Room Item Component
 interface RoomItemProps {
   room: Room;
   isActive?: boolean;
   onClick?: () => void;
+  onDelete?: (roomId: string) => void;
 }
 
- const RoomItem = ({ room, isActive, onClick }: RoomItemProps) => {
+const RoomItem = ({ room, isActive, onClick, onDelete }: RoomItemProps) => {
   return (
-    <button
-      onClick={onClick}
-      className={cn(
-        "flex items-center gap-2 w-full px-2 py-1.5 mx-2 rounded-md text-sm",
-        "text-neutral-400 hover:text-neutral-100",
-        "transition-all duration-150 ease-out group",
-        isActive ? "bg-neutral-700/60 text-white" : "hover:bg-neutral-800/60",
-      )}
-      style={{ width: "calc(100% - 16px)" }}
-    >
-      <Hash
-        size={18}
+    <div className="group relative mx-2">
+      <button
+        onClick={onClick}
         className={cn(
-          "flex-shrink-0 transition-colors",
-          isActive
-            ? "text-white"
-            : "text-neutral-500 group-hover:text-neutral-300",
+          "flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-sm",
+          "text-neutral-400 hover:text-neutral-100",
+          "transition-all duration-150 ease-out",
+          isActive ? "bg-neutral-700/60 text-white" : "hover:bg-neutral-800/60",
         )}
-      />
-      <span className="truncate font-medium">{room.roomName}</span>
+      >
+        <Hash
+          size={18}
+          className={cn(
+            "flex-shrink-0 transition-colors",
+            isActive
+              ? "text-white"
+              : "text-neutral-500 group-hover:text-neutral-300",
+          )}
+        />
+        <span className="truncate font-medium">{room.roomName}</span>
 
-      {/* Action icons on hover */}
-      <div className="ml-auto flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-        <div className="p-1 rounded hover:bg-neutral-600/50 cursor-pointer">
-          <Settings
-            size={14}
-            className="text-neutral-400 hover:text-neutral-200"
-          />
+        {/* Action icons on hover */}
+        <div className="ml-auto flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+              <div className="p-1 rounded hover:bg-neutral-600/50 cursor-pointer">
+                <Settings
+                  size={14}
+                  className="text-neutral-400 hover:text-neutral-200"
+                />
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              side="right"
+              align="start"
+              className="w-48 bg-neutral-950 border-neutral-800 text-neutral-200"
+            >
+              <DropdownMenuItem
+                className="cursor-pointer text-rose-500 focus:bg-rose-600 focus:text-white"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete?.(room.roomId);
+                }}
+              >
+                <Trash className="mr-2 h-4 w-4" />
+                <span>Delete Room</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
-      </div>
-    </button>
+      </button>
+    </div>
   );
 };
 
-// Rooms Section Header (No changes)
+// Rooms Section Header
 const RoomsSection = ({ onAddClick }: { onAddClick: () => void }) => {
   const [isOpen, setIsOpen] = useState(true);
 
@@ -107,67 +132,73 @@ const RoomsSection = ({ onAddClick }: { onAddClick: () => void }) => {
   );
 };
 
-import { useUser } from "@/feature/auth/user.hook";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useLogout } from "@/feature/auth/auth.hook";
-import { User } from "lucide-react";
-
-export const RoomSidebar = ({ serverName = "Server" }: RoomSidebarProps) => {
-  const { activeServerId } = useServerStore();
+export const RoomSidebar = () => {
+  const { activeServerId, activeServerName, setActiveServerId } = useServerStore();
   const { activeRoomId, setActiveRoomId } = useRoomStore();
   const { data, isPending, error } = useGetRooms(activeServerId);
-  const { userId } = useAuthStore();
-  const { data: user } = useUser(userId);
-  const { mutate: logout } = useLogout();
+
+  const { mutate: deleteServer } = useDeleteServer();
+  const { mutate: deleteRoom } = useDeleteRoom();
 
   // State for Modals & Menu
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false); // <--- NEW STATE
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const rooms = useMemo(() => data?.rooms || [], [data?.rooms]);
 
   useEffect(() => {
     if (!activeRoomId) return;
     joinRoom(activeRoomId);
-    return () => {
-      // console.log("Leaving room", activeRoomId);
-    };
   }, [activeRoomId]);
 
   const handleRoomSelect = useCallback(
-    (roomId: string) => {
-      setActiveRoomId(roomId);
+    (roomId: string, roomName: string) => {
+      setActiveRoomId(roomId, roomName);
     },
     [setActiveRoomId]
   );
 
-  // Handler for Invite Click
+  const handleDeleteServer = () => {
+    if (activeServerId && window.confirm("Are you sure you want to delete this server?")) {
+      deleteServer(activeServerId, {
+        onSuccess: () => {
+          setActiveServerId(null);
+          setIsMenuOpen(false);
+        }
+      });
+    }
+  };
+
+  const handleDeleteRoom = (roomId: string) => {
+    if (activeServerId && window.confirm("Are you sure you want to delete this room?")) {
+      deleteRoom({ serverId: activeServerId, roomId }, {
+        onSuccess: () => {
+          if (activeRoomId === roomId) {
+            setActiveRoomId(null);
+          }
+        }
+      });
+    }
+  };
+
   const handleInvite = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Stop menu from closing immediately if needed
+    e.stopPropagation();
     setIsInviteModalOpen(true);
     setIsMenuOpen(false);
-    // TODO: Open your Invite Modal here
   };
 
   return (
     <>
-      <aside className="flex flex-col w-60 min-w-[240px] h-screen bg-neutral-900 relative">
+      <aside className="flex flex-col w-60 min-w-[240px] h-screen bg-neutral-950 relative border-r border-neutral-800/60">
         {/* ---------------- SERVER HEADER (DROPDOWN TRIGGER) ---------------- */}
         <div className="relative shadow-md">
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="w-full flex items-center justify-between h-12 px-4 border-b border-neutral-950/80 hover:bg-neutral-800/40 cursor-pointer transition-all duration-150"
+            className="w-full flex items-center justify-between h-12 px-4 border-b border-neutral-800/60 hover:bg-neutral-800/40 cursor-pointer transition-all duration-150"
           >
             <h2 className="font-bold text-white truncate text-[15px]">
-              {serverName}
+              {activeServerName || "Server"}
             </h2>
             {/* Rotate Chevron when open */}
             <ChevronDown
@@ -190,7 +221,7 @@ export const RoomSidebar = ({ serverName = "Server" }: RoomSidebarProps) => {
 
               {/* Menu Items */}
               <div className="absolute top-14 left-2 right-2 z-50 bg-neutral-950 rounded-md border border-neutral-800 shadow-xl overflow-hidden p-1.5 animate-in fade-in zoom-in-95 duration-100">
-                {/* 1. Invite Option (Highlighted) */}
+                {/* 1. Invite Option */}
                 <button
                   onClick={handleInvite}
                   className="w-full flex items-center justify-between px-2 py-2 text-indigo-400 hover:bg-indigo-500 hover:text-white rounded-sm transition-colors group cursor-pointer mb-1"
@@ -210,8 +241,14 @@ export const RoomSidebar = ({ serverName = "Server" }: RoomSidebarProps) => {
                   <Settings size={16} />
                 </button>
 
-                <button className="w-full flex items-center justify-between px-2 py-2 text-neutral-400 hover:bg-neutral-800 hover:text-neutral-200 rounded-sm transition-colors cursor-pointer">
-                  <span className="font-medium text-sm">Create Channel</span>
+                <button
+                  onClick={() => {
+                    setIsCreateModalOpen(true);
+                    setIsMenuOpen(false);
+                  }}
+                  className="w-full flex items-center justify-between px-2 py-2 text-neutral-400 hover:bg-neutral-800 hover:text-neutral-200 rounded-sm transition-colors cursor-pointer"
+                >
+                  <span className="font-medium text-sm">Create Room</span>
                   <Plus size={16} />
                 </button>
 
@@ -219,7 +256,10 @@ export const RoomSidebar = ({ serverName = "Server" }: RoomSidebarProps) => {
                 <div className="h-[1px] bg-neutral-800 my-1 mx-1" />
 
                 {/* 3. Danger Zone */}
-                <button className="w-full flex items-center justify-between px-2 py-2 text-rose-500 hover:bg-rose-500 hover:text-white rounded-sm transition-colors cursor-pointer">
+                <button
+                  onClick={handleDeleteServer}
+                  className="w-full flex items-center justify-between px-2 py-2 text-rose-500 hover:bg-rose-600 hover:text-white rounded-sm transition-colors cursor-pointer"
+                >
                   <span className="font-medium text-sm">Delete Server</span>
                   <Trash size={16} />
                 </button>
@@ -251,76 +291,18 @@ export const RoomSidebar = ({ serverName = "Server" }: RoomSidebarProps) => {
                   key={room.roomId}
                   room={room}
                   isActive={activeRoomId === room.roomId}
-                  onClick={() => handleRoomSelect(room.roomId)}
+                  onClick={() => handleRoomSelect(room.roomId, room.roomName)}
+                  onDelete={handleDeleteRoom}
                 />
               ))}
             </div>
           )}
         </div>
 
-        {/* User Panel (bottom) - Dropdown */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <div className="flex items-center gap-2 h-[52px] px-2 bg-neutral-950/80 border-t border-neutral-800/50 cursor-pointer hover:bg-neutral-800/40 transition-colors">
-              <div className="relative">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
-                  <span className="text-white text-sm font-semibold">
-                    {user?.username?.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-                <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-neutral-950" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-white truncate">
-                  {user?.username}
-                </p>
-                <p className="text-[11px] text-neutral-400 truncate">Online</p>
-              </div>
-              <div className="flex items-center gap-0.5">
-                <button className="p-1.5 rounded-md text-neutral-400 hover:text-neutral-200 hover:bg-neutral-700/50 transition-all">
-                  <Mic size={16} />
-                </button>
-                <button className="p-1.5 rounded-md text-neutral-400 hover:text-neutral-200 hover:bg-neutral-700/50 transition-all">
-                  <Headphones size={16} />
-                </button>
-                <button className="p-1.5 rounded-md text-neutral-400 hover:text-neutral-200 hover:bg-neutral-700/50 transition-all">
-                  <Cog size={16} />
-                </button>
-              </div>
-            </div>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            side="top"
-            align="start"
-            className="w-56 bg-neutral-950 border-neutral-800 text-neutral-200"
-          >
-            <DropdownMenuLabel className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
-                <span className="text-white text-sm font-semibold">
-                  {user?.username?.charAt(0).toUpperCase()}
-                </span>
-              </div>
-              <span className="font-semibold">{user?.username}</span>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator className="bg-neutral-800" />
-            <DropdownMenuItem className="cursor-pointer focus:bg-neutral-800 focus:text-white">
-              <User className="mr-2 h-4 w-4" />
-              <span>Profile</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer focus:bg-neutral-800 focus:text-white">
-              <Settings className="mr-2 h-4 w-4" />
-              <span>Settings</span>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator className="bg-neutral-800" />
-            <DropdownMenuItem
-              className="cursor-pointer text-red-500 focus:bg-red-500 focus:text-white"
-              onClick={() => logout()}
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              <span>Log out</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {/* User Panel (bottom) */}
+        <div className="mt-auto pb-4">
+          <UserPanel />
+        </div>
       </aside>
 
       {/* Modals */}
@@ -335,14 +317,12 @@ export const RoomSidebar = ({ serverName = "Server" }: RoomSidebarProps) => {
             isOpen={isInviteModalOpen}
             onClose={() => setIsInviteModalOpen(false)}
             serverId={activeServerId}
-            serverName={serverName}
+            serverName={activeServerName || "Server"}
           />
         </>
       )}
     </>
   );
 };
-
-
 
 export default RoomSidebar;

@@ -10,7 +10,7 @@ import { generateUsername } from '../helper/utility.js';
 
 // Signup Service function
 export const signup = async (user: Omit<SignupRequest, 'username'>): Promise<SignupResponse> => {
-    
+
     // Check if user already exist
     const userExist = await userModel.findOne({ email: user.email });
     if (userExist) {
@@ -23,6 +23,7 @@ export const signup = async (user: Omit<SignupRequest, 'username'>): Promise<Sig
 
     // Generate username
     const username = await generateUsername(user.name);
+    logger.info(`Generated username for ${user.name}: ${username}`);
 
     // Save new User;
     const newUser = await userModel.create({
@@ -57,11 +58,11 @@ export const signup = async (user: Omit<SignupRequest, 'username'>): Promise<Sig
             accessToken: token.accessToken,
         },
         server: {
-                serverId: userServer.serverId,
-                roomId: userServer.roomId, 
-                serverName: userServer.serverName,
-                roomName: userServer.roomName
-            },
+            serverId: userServer.serverId,
+            roomId: userServer.roomId,
+            serverName: userServer.serverName,
+            roomName: userServer.roomName
+        },
         refreshToken: token.refreshToken
     }
 

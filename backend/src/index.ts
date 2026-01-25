@@ -45,6 +45,9 @@ const io = new Server(server, {
     }
 });
 
+// Attach io to app
+app.set("io", io);
+
 // Apply socket authentication middleware
 io.use(socketAuth);
 

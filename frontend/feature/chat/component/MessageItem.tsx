@@ -44,17 +44,16 @@ const MessageItem = ({
   message,
   isOwn = false,
   showAvatar = true,
-  username,
 }: MessageItemProps) => {
-  // Use either the message username or the prop (fallback)
-  const displayName = isOwn ? (username || message.username) : message.username;
+  // Use either the message name or the prop (fallback)
+  const displayName = message.username;
 
   return (
     <div
       className={cn(
         "group flex gap-4 py-[2px] px-4 w-full transition-colors relative",
         // Discord uses a very subtle grey/white tint on hover
-        "hover:bg-[#2e3035]/50", 
+        "hover:bg-[#2e3035]/50",
         !showAvatar && "mt-[-4px]" // Tighten spacing for consecutive messages
       )}
     >
@@ -74,7 +73,7 @@ const MessageItem = ({
         ) : (
           /* Show time on hover when avatar is hidden (Discord style) */
           <div className="opacity-0 group-hover:opacity-100 text-[10px] text-neutral-500 text-center mt-[6px] transition-opacity">
-             {new Date(message.createdAt).getHours()}:{new Date(message.createdAt).getMinutes()}
+            {new Date(message.createdAt).getHours()}:{new Date(message.createdAt).getMinutes()}
           </div>
         )}
       </div>
@@ -105,8 +104,8 @@ const MessageItem = ({
       {/* Hover Toolbar (Placeholder for Edit/Delete) */}
       <div className="absolute -top-4 right-4 opacity-0 group-hover:opacity-100 transition-all z-10">
         <div className="flex bg-[#2B2D31] border border-[#1E1F22] rounded-[4px] shadow-sm p-1">
-           {/* Add your Edit/Delete icons here later */}
-           <div className="w-6 h-6 hover:bg-neutral-700 rounded cursor-pointer" />
+          {/* Add your Edit/Delete icons here later */}
+          <div className="w-6 h-6 hover:bg-neutral-700 rounded cursor-pointer" />
         </div>
       </div>
     </div>

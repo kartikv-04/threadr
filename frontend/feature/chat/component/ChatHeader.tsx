@@ -10,9 +10,8 @@ interface ChatHeaderProps {
 const ChatHeader = ({ roomName }: ChatHeaderProps) => {
     return (
         <div className={cn(
-            "flex items-center justify-between h-12 px-4",
-            "bg-neutral-800 border-b border-neutral-900",
-            "shadow-sm"
+            "flex items-center justify-between h-12 px-4 shadow-sm",
+            "bg-neutral-950 border-b border-neutral-800/60",
         )}>
             {/* Left side - Room info */}
             <div className="flex items-center gap-2">

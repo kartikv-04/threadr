@@ -1,11 +1,11 @@
 import { api } from "../../lib/api";
-import { 
-  GetRoomResponse, 
-  NewRoomRequest, 
-  NewRoomResponse, 
-  GenerateInviteResponse, 
-  GetInviteInfoResponse, 
-  JoinServerRequest 
+import {
+    GetRoomResponse,
+    NewRoomRequest,
+    NewRoomResponse,
+    GenerateInviteResponse,
+    GetInviteInfoResponse,
+    JoinServerRequest
 } from "./type";
 
 //  Get Rooms
@@ -26,10 +26,10 @@ export const getRooms = async (serverId: string): Promise<GetRoomResponse> => {
 // Create Room
 export const createRoom = async (payload: NewRoomRequest): Promise<NewRoomResponse> => {
 
-    const { data } = await api.post(`/r/${payload.serverId}`, { 
-        roomName: payload.roomName 
+    const { data } = await api.post(`/r/${payload.serverId}`, {
+        roomName: payload.roomName
     });
-    
+
     const room = data.data;
 
     return {
@@ -43,7 +43,7 @@ export const createRoom = async (payload: NewRoomRequest): Promise<NewRoomRespon
 // Generate Invite Link
 export const generateInvite = async (serverId: string): Promise<GenerateInviteResponse> => {
     const { data } = await api.post(`/s/${serverId}/invite`);
-    return data.data; 
+    return data.data;
 }
 
 //  Get Invite Info (Preview before joining)
@@ -56,4 +56,9 @@ export const getInviteInfo = async (code: string): Promise<GetInviteInfoResponse
 export const joinServer = async (payload: JoinServerRequest): Promise<{ serverId: string }> => {
     const { data } = await api.post(`/invite/join`, payload);
     return data.data;
+}
+
+// Delete Room
+export const deleteRoom = async (serverId: string, roomId: string): Promise<void> => {
+    await api.delete(`/r/${serverId}/${roomId}`);
 }

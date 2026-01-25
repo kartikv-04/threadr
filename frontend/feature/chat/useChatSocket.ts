@@ -1,33 +1,52 @@
 import { useEffect } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 import { useMessageStore } from "@/feature/chat/MessageStore"; 
 import { socket } from "@/lib/socket"; 
 import { Message } from "@/feature/chat/chat.type";
 
 export const useChatSocket = (serverId: string, roomId: string) => {
-  const queryClient = useQueryClient();
   const { addMessage } = useMessageStore();
 
   useEffect(() => {
-    if (!socket || !socket.connected) return;
+    if (!roomId) {
+      return;
+    }
 
-    // 1. Join the Room
-    socket.emit("join:room", roomId);
+    const setupSocketListeners = () => {
+      socket.emit("join:room", roomId);
 
-    // 2. Listen for incoming messages
-    const handleNewMessage = (newMessage: Message) => {
-      addMessage(newMessage);
-      queryClient.invalidateQueries({
-        queryKey: ["messages", serverId, roomId],
-      });
+      const handleNewMessage = (newMessage: Message) => {
+        if (newMessage.roomId === roomId) {
+          addMessage(newMessage);
+        }
+      };
+
+      socket.on("send:message:room", handleNewMessage);
+
+      return () => {
+        socket.emit("leave:room", roomId);
+        socket.off("send:message:room", handleNewMessage);
+      };
     };
 
-    socket.on("send:message:room", handleNewMessage);
+    let cleanup: (() => void) | undefined;
+    if (socket.connected) {
+      cleanup = setupSocketListeners();
+    }
 
-    // 3. Cleanup on unmount or room switch
+    const handleConnect = () => {
+      if (cleanup) {
+        cleanup();
+      }
+      cleanup = setupSocketListeners();
+    };
+
+    socket.on("connect", handleConnect);
+
     return () => {
-      socket.emit("leave:room", roomId);
-      socket.off("send:message:room", handleNewMessage);
+      socket.off("connect", handleConnect);
+      if (cleanup) {
+        cleanup();
+      }
     };
-  }, [serverId, roomId, addMessage, queryClient]);
+  }, [roomId, addMessage]);
 };

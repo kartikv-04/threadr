@@ -24,6 +24,14 @@ export const sendMessage = asyncHandler(async (req: Request, res: Response) => {
     //  Send Message
     const result = await sendMessageService(validatedData.data);
 
+    // Emit socket event for real-time update
+    const io = req.app.get("io");
+    if (io) {
+        io.to(roomId).emit("send:message:room", result);
+    } else {
+        logger.warn("Socket.io instance not found on app, real-time update failed");
+    }
+
     logger.info("Message Sent Successfully");
 
     //  Send Response
