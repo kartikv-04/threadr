@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ServerSidebar } from "@/feature/server/component/ServerSidebar";
-import { RoomSidebar } from "@/feature/room";
+import { RoomSidebar } from "@/feature/room/components/RoomSidebar";
 import { ChatArea } from "@/feature/chat";
 import { useServerStore } from "@/feature/server/ServerStore";
 import { useRoomStore } from "@/store/RoomStore";

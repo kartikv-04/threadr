@@ -40,7 +40,7 @@ interface RoomItemProps {
   onClick?: () => void;
 }
 
-const RoomItem = ({ room, isActive, onClick }: RoomItemProps) => {
+ const RoomItem = ({ room, isActive, onClick }: RoomItemProps) => {
   return (
     <button
       onClick={onClick}
@@ -106,8 +106,7 @@ const RoomsSection = ({ onAddClick }: { onAddClick: () => void }) => {
   );
 };
 
-// --- MAIN COMPONENT ---
-const RoomSidebar = ({ serverName = "Server" }: RoomSidebarProps) => {
+export const RoomSidebar = ({ serverName = "Server" }: RoomSidebarProps) => {
   const { activeServerId } = useServerStore();
   const { activeRoomId, setActiveRoomId } = useRoomStore();
   const { data, isPending, error } = useGetRooms(activeServerId);

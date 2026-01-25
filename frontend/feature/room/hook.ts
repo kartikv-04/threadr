@@ -8,7 +8,8 @@ export const useGetRooms = (serverId: string | null) => {
     return useQuery({
         queryKey: ['rooms', serverId],
         queryFn: () => getRooms(serverId!),
-        enabled: !!token && !!serverId
+        enabled: !!token && !!serverId,
+        staleTime: 1000 * 60,
     });
 }
 
@@ -33,7 +34,8 @@ export const useGetInviteInfo = (code: string) => {
     return useQuery({
         queryKey: ['invite', code],
         queryFn: () => getInviteInfo(code),
-        enabled: !!code
+        enabled: !!code,
+        retry: false,
     });
 }
 

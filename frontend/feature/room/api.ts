@@ -1,13 +1,21 @@
 import { api } from "../../lib/api";
-import { GetRoomResponse, NewRoomRequest, NewRoomResponse, GenerateInviteResponse, GetInviteInfoResponse, JoinServerRequest } from "./type";
+import { 
+  GetRoomResponse, 
+  NewRoomRequest, 
+  NewRoomResponse, 
+  GenerateInviteResponse, 
+  GetInviteInfoResponse, 
+  JoinServerRequest 
+} from "./type";
 
+//  Get Rooms
 export const getRooms = async (serverId: string): Promise<GetRoomResponse> => {
     try {
-        const result = await api.get(`/r/${serverId}`);
-        // Backend returns: { success, message, data: { rooms: [...] } }
-        return { rooms: result.data.data?.rooms || [] };
+        const { data } = await api.get(`/r/${serverId}`);
+
+        // Optional Chaining (?.) prevents crash if data.data is null
+        return { rooms: data.data?.rooms || [] };
     } catch (error: any) {
-        // If 404 (no rooms found), return empty array
         if (error?.response?.status === 404) {
             return { rooms: [] };
         }
@@ -15,45 +23,37 @@ export const getRooms = async (serverId: string): Promise<GetRoomResponse> => {
     }
 }
 
-export const createRoom = async (data: NewRoomRequest): Promise<NewRoomResponse> => {
-    try {
-        const result = await api.post(`/r/${data.serverId}`, { roomName: data.roomName });
-        // Backend returns: { success, message, data: {...} }
-        return {
-            roomId: result.data.data.roomId,
-            roomName: result.data.data.roomName,
-            serverId: result.data.data.serverId,
-            createdAt: result.data.data.createdAt
-        };
-    } catch (error: any) {
-        throw error;
-    }
+// Create Room
+export const createRoom = async (payload: NewRoomRequest): Promise<NewRoomResponse> => {
+
+    const { data } = await api.post(`/r/${payload.serverId}`, { 
+        roomName: payload.roomName 
+    });
+    
+    const room = data.data;
+
+    return {
+        roomId: room.roomId,
+        roomName: room.roomName,
+        serverId: room.serverId,
+        createdAt: room.createdAt
+    };
 }
 
+// Generate Invite Link
 export const generateInvite = async (serverId: string): Promise<GenerateInviteResponse> => {
-    try {
-        const result = await api.post(`/s/${serverId}/invite`);
-        // Backend returns: { success: true, message: "...", data: { url, code, expiresAt, isPermanent } }
-        return result.data.data;
-    } catch (error: any) {
-        throw error;
-    }
+    const { data } = await api.post(`/s/${serverId}/invite`);
+    return data.data; 
 }
 
+//  Get Invite Info (Preview before joining)
 export const getInviteInfo = async (code: string): Promise<GetInviteInfoResponse> => {
-    try {
-        const result = await api.get(`/invite/${code}`);
-        return result.data.data;
-    } catch (error: any) {
-        throw error;
-    }
+    const { data } = await api.get(`/invite/${code}`);
+    return data.data;
 }
 
-export const joinServer = async (data: JoinServerRequest): Promise<{ serverId: string }> => {
-    try {
-        const result = await api.post(`/invite/join`, data);
-        return result.data.data;
-    } catch (error: any) {
-        throw error;
-    }
+// Join Server via Invite
+export const joinServer = async (payload: JoinServerRequest): Promise<{ serverId: string }> => {
+    const { data } = await api.post(`/invite/join`, payload);
+    return data.data;
 }
