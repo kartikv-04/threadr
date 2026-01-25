@@ -1,7 +1,7 @@
 import { io, Socket } from "socket.io-client";
-import { Message } from "@/feature/chat/type";
+import { Message } from "@/feature/chat/chat.type";
 
-const URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
+const URL = process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:5001";
 
 export const socket: Socket = io(URL, {
     autoConnect: false,

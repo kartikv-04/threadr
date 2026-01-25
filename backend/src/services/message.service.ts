@@ -5,9 +5,10 @@ import type { GetMessagesRequest, MessageResponse, SendMessageRequest } from "..
 import { roomModel } from "../models/room.model.js"
 import { memberModel } from "../models/member.model.js"
 import { NotFoundError, UnauthorizedError, ValidationError } from "../helper/errorClass.js";
+import type { Request } from "express"
 
 
-export const sendMessageService = async (data: SendMessageRequest): Promise<MessageResponse> => {
+export const sendMessageService = async (req : Request, data: SendMessageRequest): Promise<MessageResponse> => {
     // Check if all fields are valid and not empty
     if (!data.userId || !data.serverId || !data.roomId || !data.content) {
         logger.warn(`Missing Fields ${data.userId}, ${data.serverId} and many more`);
@@ -34,7 +35,9 @@ export const sendMessageService = async (data: SendMessageRequest): Promise<Mess
         sentBy: data.userId,
         room: data.roomId,
         server: data.serverId
-    })
+    });
+
+    (req).app.get("io").to(data.roomId).emit("send:message:room", newMessage);
 
     // Populate message model to get username
     const populatedMessage = await newMessage.populate<{ sentBy: { username: string } }>("sentBy", "username");

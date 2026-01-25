@@ -1,66 +1,94 @@
 "use client";
 
-import { useGetMessages, useSendMessage } from "../hook";
+import { useEffect, useMemo } from "react";
+import { useChatScroll, useSendMessage } from "../chat.hook"; 
+import { useChatSocket } from "../useChatSocket"; 
 import ChatHeader from "./ChatHeader";
 import MessageList from "./MessageList";
 import MessageInput from "./MessageInput";
-import { useMessageStore } from "@/store/MessageStore";
+import { useMessageStore } from "@/feature/chat/MessageStore";
 
 interface ChatAreaProps {
-    serverId: string;
-    roomId: string;
-    roomName: string;
-    currentUserId?: string;
+  serverId: string;
+  roomId: string;
+  roomName: string;
+  currentUserId?: string;
 }
 
-const ChatArea = ({ serverId, roomId, roomName, currentUserId }: ChatAreaProps) => {
-    const { isLoading, error } = useGetMessages(serverId, roomId);
-    const { mutate: sendMessage, isPending: isSending } = useSendMessage();
-    const { messages } = useMessageStore();
+export const ChatArea = ({
+  serverId,
+  roomId,
+  roomName,
+  currentUserId,
+}: ChatAreaProps) => {
+  // 1. Fetch History (Infinite Scroll)
+  const { 
+    data, 
+    fetchNextPage, 
+    hasNextPage, 
+    isFetchingNextPage, 
+    status 
+  } = useChatScroll(serverId, roomId);
 
-    const handleSendMessage = (content: string) => {
-        sendMessage({
-            serverId,
-            roomId,
-            content
-        });
-    };
+  // 2. Connect to Socket Room
+  useChatSocket(serverId, roomId);
 
-    // Error state
-    if (error) {
-        return (
-            <div className="flex-1 flex flex-col bg-neutral-800">
-                <ChatHeader roomName={roomName} />
-                <div className="flex-1 flex items-center justify-center">
-                    <div className="text-center">
-                        <p className="text-red-400 mb-2">Failed to load messages</p>
-                        <p className="text-neutral-500 text-sm">Please try again later</p>
-                    </div>
-                </div>
-            </div>
-        );
-    }
+  // 3. Get Live Messages from Store
+  const liveMessages = useMessageStore((state) => state.messages);
+  const clearMessages = useMessageStore((state) => state.clearMessages);
+  
+  // 4. Send Message Hook
+  const { mutate: sendMessage, isPending: isSending } = useSendMessage();
 
+  // Clear live buffer when switching rooms
+  useEffect(() => {
+    clearMessages();
+  }, [roomId, clearMessages]);
+
+  // 5. MERGE DATA: Combine React Query History + Zustand Live Buffer
+  const formattedMessages = useMemo(() => {
+    if (!data?.pages) return [...liveMessages];
+
+    // Flatten pages: [[Msg1, Msg2], [Msg3, Msg4]] -> [Msg1, Msg2, Msg3, Msg4]
+    const history = data.pages.flatMap((page) => page.messages) || [];
+
+    // Combine and Sort 
+    return [...history, ...liveMessages];
+  }, [data, liveMessages]);
+
+  const handleSendMessage = (content: string) => {
+    sendMessage({ serverId, roomId, content });
+  };
+
+  if (status === "error") {
     return (
-        <div className="flex-1 flex flex-col bg-neutral-800">
-            {/* Header */}
-            <ChatHeader roomName={roomName} />
-
-            {/* Messages */}
-            <MessageList
-                messages={messages}
-                isLoading={isLoading}
-                currentUserId={currentUserId}
-            />
-
-            {/* Input */}
-            <MessageInput
-                onSend={handleSendMessage}
-                disabled={isSending}
-                roomName={roomName}
-            />
-        </div>
+      <div className="flex-1 flex flex-col bg-neutral-800 items-center justify-center text-red-400">
+         <p>Failed to load messages.</p>
+      </div>
     );
+  }
+
+  return (
+    <div className="flex-1 flex flex-col bg-neutral-800 h-full overflow-hidden">
+      <ChatHeader roomName={roomName} />
+
+      <MessageList
+        messages={formattedMessages}
+        isLoading={status === "pending"}
+        currentUserId={currentUserId}
+        // Infinite Scroll Props
+        loadMore={fetchNextPage}
+        hasMore={hasNextPage}
+        isLoadingMore={isFetchingNextPage}
+      />
+
+      <MessageInput
+        onSend={handleSendMessage}
+        disabled={isSending}
+        roomName={roomName}
+      />
+    </div>
+  );
 };
 
 export default ChatArea;
