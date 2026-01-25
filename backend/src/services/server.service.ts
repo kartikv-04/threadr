@@ -1,4 +1,4 @@
-import type { CreateServerRequest, NewServerResponse, GetMemberRequest, GetMemberResponse, GetServerRequest, GetServerResponse, DeleteServerReqest } from "../types/types.js";
+import type { CreateServerRequest, NewServerResponse, GetServerRequest, GetServerResponse, DeleteServerReqest } from "../types/types.js";
 import { serverModel } from "../models/server.model.js"
 import logger from "../config/logger.js"
 import { NotFoundError, UnauthorizedError, ValidationError } from "../helper/errorClass.js";
@@ -10,8 +10,8 @@ import { createRoom } from "./room.service.js";
 export const createServer = async (data: CreateServerRequest): Promise<NewServerResponse> => {
     // Validate incoming details
     if (!data.userId || !data.serverName?.trim()) {
-        logger.warn("Server name and userid are required!!");
-        throw new ValidationError("Server and userid are required!");
+        logger.warn("Missing required fields for server creation.");
+        throw new ValidationError("Server name and user ID are required.");
     }
 
     // Create server and add creator as member
@@ -21,14 +21,14 @@ export const createServer = async (data: CreateServerRequest): Promise<NewServer
     })
 
     if (!newServer) {
-        logger.error("Error in create server function");
-        throw new Error("Error in server function")
+        logger.error("Internal error during server creation.");
+        throw new Error("Could not create server. Please try again later.");
     }
 
     logger.debug("New Server has been created by user");
 
     // Add user to member model
-    const newMember = await memberModel.create({
+    await memberModel.create({
         server: newServer._id,
         user: data.userId,
         role: "admin",
@@ -39,9 +39,9 @@ export const createServer = async (data: CreateServerRequest): Promise<NewServer
 
     // Create Default general room For each server created
     const roomData = {
-        userId : data.userId,
-        roomName : "general",
-        serverId : newServer._id.toString()
+        userId: data.userId,
+        roomName: "general",
+        serverId: newServer._id.toString()
     };
 
     const newGeneralRoom = await createRoom(roomData);
@@ -66,8 +66,8 @@ export const createServer = async (data: CreateServerRequest): Promise<NewServer
 export const getServerList = async (data: GetServerRequest): Promise<GetServerResponse> => {
     // Check and validate data
     if (!data.userId) {
-        logger.error("Userid not provided!!");
-        throw new ValidationError("Empty userid provided, try again!");
+        logger.error("User ID not provided for server list retrieval.");
+        throw new ValidationError("User ID is required.");
     }
 
     // Find Server of which user is part of
@@ -77,14 +77,14 @@ export const getServerList = async (data: GetServerRequest): Promise<GetServerRe
         .exec();
 
     if (serverArray.length === 0) {
-        logger.info("user is not yet part of any server");
-        throw new NotFoundError("No server found!");
+        logger.info("User has no server memberships.");
+        throw new NotFoundError("No servers found.");
     }
 
-    const formatedServer = serverArray.map( list => {
-        const server = list.server as any as { _id : string, name: string; icon: string };
+    const formatedServer = serverArray.map(list => {
+        const server = list.server as any as { _id: string, name: string; icon: string };
         return {
-            serverId : server._id.toString(),
+            serverId: server._id.toString(),
             name: server.name,
             icon: server.icon
         };
@@ -97,25 +97,25 @@ export const getServerList = async (data: GetServerRequest): Promise<GetServerRe
 export const deleteServers = async (data: DeleteServerReqest): Promise<void> => {
     // Check fields are not empty
     if (!data.userId || !data.serverId) {
-        throw new ValidationError("All Fields are Required!");
+        throw new ValidationError("Required fields are missing.");
     };
 
     // Find associated user in member model
-    const findMember = await memberModel.findOne({ user: data.userId, server : data.serverId });
+    const findMember = await memberModel.findOne({ user: data.userId, server: data.serverId });
     if (!findMember) {
         throw new NotFoundError("Member Not Found");
     };
 
     // Check if Member is admin?
     if (!findMember.role.includes("admin")) {  // check role 
-        throw new UnauthorizedError("Not Authorized to delete Server");
+        throw new UnauthorizedError("You are not authorized to delete this server.");
     };
 
     // Delete the server and all room and messages belonging to these server
     await Promise.all([
-        serverModel.deleteOne({_id : data.serverId}),  // Delete Server
-        roomModel.deleteMany({server : data.serverId}),  // Deletes all roomDoc where they are part of these server
-        memberModel.deleteMany({server : data.serverId}) // Deletes All member who were part of these server
+        serverModel.deleteOne({ _id: data.serverId }),  // Delete Server
+        roomModel.deleteMany({ server: data.serverId }),  // Deletes all roomDoc where they are part of these server
+        memberModel.deleteMany({ server: data.serverId }) // Deletes All member who were part of these server
 
     ])
 

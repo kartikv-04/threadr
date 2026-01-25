@@ -13,13 +13,14 @@ import { ValidationError } from './helper/errorClass.js';
 import { errorHandler } from './middleware/errorMiddleware.js';
 import { roomHandler } from './socket/roomHandler.js';
 import { messageHandler } from './socket/messageHandler.js';
+import { CLIENT_URL } from './config/env.js';
 
-const PORT = 5001;
+const PORT = process.env.PORT || 5001;
 
 // Initializaton and Middleware
 const app = express();
 app.use(cors({
-    origin: "http://localhost:3000", // Frontend URL - must be specific for credentials
+    origin: CLIENT_URL, // Use env variable
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     credentials: true // Allow cookies to be sent
 }));
@@ -28,7 +29,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Test route - add to see error middleware
-app.get('/test-error', (req, res, next) => {
+app.get('/test-error', (_req, _res, next) => {
     next(new ValidationError("Test error"));
 });
 
@@ -39,7 +40,7 @@ app.use(errorHandler);
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: "http://localhost:3000",
+        origin: CLIENT_URL,
         methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
         credentials: true
     }
@@ -51,7 +52,7 @@ app.set("io", io);
 // Apply socket authentication middleware
 io.use(socketAuth);
 
-const onConnection = (socket : Socket) =>  {
+const onConnection = (socket: Socket) => {
     roomHandler(io, socket);
     messageHandler(io, socket);
 }
@@ -61,9 +62,9 @@ io.on("connection", onConnection);
 
 // start Server
 server.listen(PORT, () => {
-    logger.info("Server Started");
+    logger.info("Initializing server components...");
     connectDB();
-    logger.info(`Server Running at http://localhost:${PORT}`);
+    logger.info(`Server is running on port ${PORT}`);
 });
 
 

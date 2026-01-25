@@ -31,18 +31,15 @@ export default function SigninForm() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    console.log("Signin data:", form);
     mutate(form, {
-            onSuccess: () => {
-                // This runs ONLY if the login succeeds
-                console.log("Login successful, redirecting...");
-                router.push("/"); 
-            },
-            onError: (err) => {
-                console.log("Login failed", err);
-            }
-        });
-    
+      onSuccess: () => {
+        // This runs ONLY if the login succeeds
+        router.push("/");
+      },
+      onError: (err) => {
+      }
+    });
+
   }
 
   return (
@@ -79,7 +76,7 @@ export default function SigninForm() {
                 required // Added required
               />
             </div>
-            
+
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Password</Label>

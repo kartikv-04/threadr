@@ -10,22 +10,22 @@ import { NotFoundError, UnauthorizedError, ValidationError } from "../helper/err
 export const sendMessageService = async (data: SendMessageRequest): Promise<MessageResponse> => {
     // Check if all fields are valid and not empty
     if (!data.userId || !data.serverId || !data.roomId || !data.content) {
-        logger.warn(`Missing Fields ${data.userId}, ${data.serverId} and many more`);
-        throw new ValidationError("Empty Fields recieved!Ensure filling details");
+        logger.warn("Required fields for sending a message are missing.");
+        throw new ValidationError("Required fields are missing. Please provide all details.");
     }
 
     // Find server and Check if user exist by cheking if memebr of server 
     const findServer = await serverModel.findById(data.serverId);
     if (!findServer) {
-        logger.warn("Server does not Exist!");
-        throw new NotFoundError("Server does not exist !");
+        logger.warn("Attempted to send a message to a non-existent server.");
+        throw new NotFoundError("The specified server does not exist.");
     }
 
     // if server exist check is user is member or not
     const isMember = await memberModel.findOne({ user: data.userId, server: data.serverId });
     if (!isMember) {
-        logger.warn(`Unauthorized attempt to send message by user with ${data.userId}`);
-        throw new UnauthorizedError("You are not a member of this server!");
+        logger.warn("Unauthorized attempt to send a message.");
+        throw new UnauthorizedError("You are not a member of this server.");
     }
 
     // Save the message into model and update the room field
@@ -58,22 +58,22 @@ export const sendMessageService = async (data: SendMessageRequest): Promise<Mess
 export const recieveMessage = async (data: GetMessagesRequest): Promise<MessageResponse> => {
     // 1. Validatoin : Check if Fields Exist
     if (!data.userId || !data.serverId || !data.roomId) {
-        logger.warn("Missing fields for recieving messages!!");
-        throw new ValidationError("Missing required fields for getting messages!");
+        logger.warn("Incomplete parameters for message retrieval.");
+        throw new ValidationError("Required fields are missing for message retrieval.");
     }
 
     // 2. Check if Server Exist
     const ifServer = await serverModel.findById(data.serverId);
     if (!ifServer) {
-        logger.warn("Server not found!");
-        throw new NotFoundError("Server not found!");
+        logger.warn("Server not found.");
+        throw new NotFoundError("The specified server could not be found.");
     }
 
     // 3. Check if User is part of the server or not
     const isMember = await memberModel.findOne({ user: data.userId, server: data.serverId });
     if (!isMember) {
-        logger.warn(`Unauthorized attempt to view message with userid : ${data.userId}`);
-        throw new UnauthorizedError("You are not memebr of these server!");
+        logger.warn("Unauthorized server data access attempt.");
+        throw new UnauthorizedError("You are not a member of this server.");
     }
 
     // 4. Check if Romm Exist or Not

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useAuthStore } from "@/feature/auth/AuthStore"; 
+import { useAuthStore } from "@/feature/auth/AuthStore";
 import { connectSocket, disconnectSocket, socket } from "./socket";
 
 export const useSocketManager = () => {
@@ -11,12 +11,10 @@ export const useSocketManager = () => {
   useEffect(() => {
     // If we have a token and aren't connected, connect!
     if (accessToken) {
-      console.log(" Auth detected, initializing socket...");
       connectSocket(accessToken);
-    } 
+    }
     // If token is gone (logout), kill the connection
     else {
-      console.log(" No auth, disconnecting socket...");
       disconnectSocket();
     }
 
@@ -28,17 +26,11 @@ export const useSocketManager = () => {
 
   // Add global event listeners for debugging
   useEffect(() => {
-    function onConnect() {
-      console.log(" Socket Connected via Manager:", socket.id);
-    }
+    function onConnect() { }
 
-    function onDisconnect() {
-      console.log(" Socket Disconnected");
-    }
+    function onDisconnect() { }
 
-    function onConnectError(err: any) {
-      console.error(" Socket Connection Error:", err.message);
-    }
+    function onConnectError(err: any) { }
 
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);

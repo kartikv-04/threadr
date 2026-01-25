@@ -19,7 +19,7 @@ interface SignupFormData {
 export default function SignupForm() {
   const { mutate, isPending, isError, error } = useSignup();
   const router = useRouter();
-  
+
   // Local state for validation errors (like password mismatch)
   const [validationError, setValidationError] = useState<string | null>(null);
 
@@ -39,28 +39,25 @@ export default function SignupForm() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    
+
     // 1. Client-side validation
     if (form.password !== form.confirmPassword) {
-        setValidationError("Passwords do not match.");
-        return;
+      setValidationError("Passwords do not match.");
+      return;
     }
 
     // 2. Prepare data (exclude confirmPassword if backend doesn't want it)
     const { confirmPassword, ...submitData } = form;
 
     // 3. Call signup hook
-    console.log("Signup data:", submitData);
     mutate(form, {
-        onSuccess: () => {
-                // This runs ONLY if the login succeeds
-                console.log("Login successful, redirecting...");
-                router.push("/"); 
-            },
-            onError: (err) => {
-                console.log("Login failed", err);
-            }
-    }); 
+      onSuccess: () => {
+        // This runs ONLY if the login succeeds
+        router.push("/");
+      },
+      onError: (err) => {
+      }
+    });
   }
 
   return (
@@ -158,7 +155,7 @@ export default function SignupForm() {
 
             {/* Error Handling Block */}
             {validationError && (
-                 <p className="text-sm text-red-400 mt-2">{validationError}</p>
+              <p className="text-sm text-red-400 mt-2">{validationError}</p>
             )}
 
             {isError && (
@@ -180,9 +177,9 @@ export default function SignupForm() {
         <CardFooter className="flex justify-center">
           <p className="text-sm text-neutral-400">
             Already have an account?
-            <Link 
-                href="/login" 
-                className="ml-1 font-semibold text-white hover:text-indigo-400"
+            <Link
+              href="/login"
+              className="ml-1 font-semibold text-white hover:text-indigo-400"
             >
               Log in
             </Link>

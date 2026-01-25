@@ -14,8 +14,8 @@ export const signup = async (user: Omit<SignupRequest, 'username'>): Promise<Sig
     // Check if user already exist
     const userExist = await userModel.findOne({ email: user.email });
     if (userExist) {
-        logger.warn("User Already exist");
-        throw new ConflictError("User Already exist");
+        logger.warn("Signup attempt with already registered email.");
+        throw new ConflictError("A user with this email address already exists.");
     }
 
     // Create hash password
