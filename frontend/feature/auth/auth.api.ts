@@ -10,7 +10,20 @@ export const getSignup = async(data : SignupPayload) : Promise<SignupResponse>=>
     return res.data;
 }
 
+
+
 export const getSignin = async(data : SignInPayload) : Promise<SignInResponse>=> {
+
     const res = await api.post("/auth/signin", data);
+
     return res.data;
+
 }
+
+
+
+export const logout = async (): Promise<void> => {
+
+    await api.post("/auth/logout");
+
+};

@@ -1,8 +1,9 @@
 "use client";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { SignInPayload, SignInResponse, SignupPayload, SignupResponse } from "./auth.type";
-import { getSignup, getSignin } from "./auth.api";
+import { getSignup, getSignin, logout } from "./auth.api";
 import { useAuthStore } from "./AuthStore";
+import { useRouter } from "next/navigation";
 
 // Hook to Post Signin User
 export const useSignIn =  () => {
@@ -30,4 +31,19 @@ export const useSignup =  () => {
         onError : (error) => console.log("error while signin user", error)
     });
     return mutation;
+};
+
+export const useLogout = () => {
+    const logoutUser = useAuthStore((state) => state.logout);
+    const queryClient = useQueryClient();
+    const router = useRouter();
+
+    return useMutation({
+        mutationFn: logout,
+        onSuccess: () => {
+            logoutUser();
+            queryClient.clear();
+            router.push("/login");
+        },
+    });
 };
