@@ -1,6 +1,5 @@
 import logger from "../config/logger.js"
 import { roomModel } from "../models/room.model.js"
-import { serverModel } from "../models/server.model.js"
 import type { NewRoomRequest, NewRoomResponse, GetRoomRequest, GetRoomResponse, DeleteRoomRequest } from "../types/types.js"
 import { NotFoundError, UnauthorizedError, ValidationError } from "../helper/errorClass.js";
 import { memberModel } from "../models/member.model.js";

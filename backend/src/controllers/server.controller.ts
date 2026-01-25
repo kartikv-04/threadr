@@ -17,9 +17,9 @@ export const newServer = asyncHandler(async (req: Request, res: Response) => {
     const validatedData = NewServer.safeParse({ userId, serverName });
 
     // Handle Erorr
-    if(!validatedData.success){
-            throw new ValidationError("Validation Failed!")
-        }
+    if (!validatedData.success) {
+        throw new ValidationError("Validation Failed!")
+    }
 
     //  Create server by using function
     const result = await createServer(validatedData.data as any);
@@ -43,7 +43,7 @@ export const serverName = asyncHandler(async (req: Request, res: Response) => {
     const validatedData = GetServerListSchema.safeParse({ userId });
 
     // Handle Error
-    if(!validatedData.success){
+    if (!validatedData.success) {
         throw new ValidationError("Validation Failed!")
     }
 
@@ -72,17 +72,14 @@ export const deleteServer = asyncHandler(async (req: Request, res: Response) => 
     const validatedData = DeleteServerSchema.safeParse({ userId, serverId });
 
     // Handle Erorr
-    if(!validatedData.success){
-            throw new ValidationError("Validation Failed!")
-        }
+    if (!validatedData.success) {
+        throw new ValidationError("Validation Failed!")
+    }
 
     // Delete Server
     await deleteServers(validatedData.data as any);
 
     //  Return result
-    return res.status(200).json({
-        success: true,
-        message: "Server Deleted Successfully"
-    })
+    return res.status(204).send();
 });
 

@@ -120,7 +120,41 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* --- Premium Dark Scrollbar Styles --- */
+
+  /* Width and Height */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  /* Track (Background) */
+  ::-webkit-scrollbar-track {
+    background: #000000;
+    /* Deepest black as requested */
+  }
+
+  /* Thumb (Bar) */
+  ::-webkit-scrollbar-thumb {
+    background: #404040;
+    /* Subdued gray */
+    border-radius: 10px;
+  }
+
+  /* Thumb Hover state */
+  ::-webkit-scrollbar-thumb:hover {
+    background: #505050;
+    /* Slightly lighter gray */
+  }
+
+  /* Firefox Support (Standard properties) */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #404040 #000000;
   }
 }

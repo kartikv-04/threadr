@@ -30,11 +30,6 @@ const serverSchema = new mongoose.Schema<Server>({
         type: Boolean,
         default: true
     },
-    inviteLink: {
-        type: String,
-        unique: true,
-        sparse: true
-    },
     icon : {
         type : String,
         default : null

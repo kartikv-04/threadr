@@ -1,11 +1,12 @@
 import { Router } from "express";
 import { getMessage, sendMessage } from "../controllers/message.controller.js";
 
-const router = Router();
+const router = Router({ mergeParams: true });
 
+// Mounted as /rooms/:roomId/messages in index.route.ts
 // POST 
-router.post('/:serverId/:roomId', sendMessage);
+router.post('/', sendMessage);
 // GET 
-router.get('/:serverId/:roomId', getMessage);
+router.get('/', getMessage);
 
 export default router;

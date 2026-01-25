@@ -6,22 +6,28 @@ import bcrypt from 'bcryptjs';
 import { ConflictError, UnauthorizedError } from '../helper/errorClass.js';
 
 
+import { generateUsername } from '../helper/utility.js';
+
 // Signup Service function
-export const signup = async (user: SignupRequest): Promise<SignupResponse> => {
-    
+export const signup = async (user: Omit<SignupRequest, 'username'>): Promise<SignupResponse> => {
+
     // Check if user already exist
     const userExist = await userModel.findOne({ email: user.email });
     if (userExist) {
-        logger.warn("User Already exist");
-        throw new ConflictError("User Already exist");
+        logger.warn("Signup attempt with already registered email.");
+        throw new ConflictError("A user with this email address already exists.");
     }
 
     // Create hash password
     const hashedPassword = await hashPassword(user.password);
 
+    // Generate username
+    const username = await generateUsername(user.name);
+    logger.info(`Generated username for ${user.name}: ${username}`);
+
     // Save new User;
     const newUser = await userModel.create({
-        username: user.username,
+        username,
         name: user.name,
         email: user.email,
         password: hashedPassword
@@ -52,11 +58,11 @@ export const signup = async (user: SignupRequest): Promise<SignupResponse> => {
             accessToken: token.accessToken,
         },
         server: {
-                serverId: userServer.serverId,
-                roomId: userServer.roomId, 
-                serverName: userServer.serverName,
-                roomName: userServer.roomName
-            },
+            serverId: userServer.serverId,
+            roomId: userServer.roomId,
+            serverName: userServer.serverName,
+            roomName: userServer.roomName
+        },
         refreshToken: token.refreshToken
     }
 
@@ -101,5 +107,20 @@ export const signin = async (data: SigninRequest): Promise<SigninResponse> => {
             accessToken: token.accessToken,
         },
         refreshToken: token.refreshToken
+    };
+}
+
+// Get User by ID Service Function
+export const getUserById = async (userId: string) => {
+    const user = await userModel.findById(userId);
+    if (!user) {
+        logger.error("User not found!");
+        throw new UnauthorizedError("User not found!");
+    }
+    return {
+        id: user._id.toString(),
+        username: user.username,
+        name: user.name,
+        email: user.email,
     };
 }

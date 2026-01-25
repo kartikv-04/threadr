@@ -11,7 +11,7 @@ export const socketAuth = async (socket: any, next: any) => {
       return next(new Error("Unauthorized: token missing"));
     }
 
-    const decoded = jwt.verify(token, ACCESS_SECRET) as any ;
+    const decoded = jwt.verify(token, ACCESS_SECRET) as any;
 
     if (!decoded?.id) {
       return next(new Error("Unauthorized: invalid token"));
@@ -27,7 +27,7 @@ export const socketAuth = async (socket: any, next: any) => {
     socket.user = user;
 
     next();
-  } catch (error : any) {
+  } catch (error: any) {
     logger.error("Socket auth error", error);
     next(new Error("Unauthorized"));
   }

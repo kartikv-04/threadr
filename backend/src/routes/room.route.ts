@@ -1,12 +1,12 @@
 import { Router } from "express";
 import { deleteRoomController, getRoom, newRoom } from "../controllers/room.controller.js";
 
-const router = Router();
+const router = Router({ mergeParams: true });
 
 // GET  - Get all rooms for a server
-router.get('/:serverId/', getRoom);
+router.get('/', getRoom);
 // POST  Create a new room
-router.post('/:serverId/', newRoom);
-router.delete('/:serverId/:roomId', deleteRoomController);
+router.post('/', newRoom);
+router.delete('/:roomId', deleteRoomController);
 
 export default router;

@@ -1,3 +1,17 @@
+import { Socket } from "socket.io";
+import { Types } from "mongoose";
+
+// ==========================================
+// SOCKET TYPES
+// ==========================================
+export interface AuthenticatedSocket extends Socket {
+    user?: {
+        _id: Types.ObjectId;
+        username: string;
+        email: string;
+        name: string;
+    }
+}
 
 
 // ==========================================
@@ -32,7 +46,7 @@ export type SignupResponse = {
         roomName: string;
     },
     refreshToken: string;
-    
+
 }
 
 export type SigninResponse = {
@@ -44,7 +58,7 @@ export type SigninResponse = {
         accessToken: string;
     },
     refreshToken: string;
-    
+
 }
 
 
@@ -60,6 +74,7 @@ export type CreateServerRequest = {
 
 export type NewServerResponse = {
     serverId: string;
+    roomId: string;
     serverName: string;
     createdBy: string;
     createdAt: Date;
@@ -79,14 +94,42 @@ export type GetServerResponse = {
 }
 
 export type DeleteServerReqest = {
-    userId : string,
-    serverId : string
+    userId: string,
+    serverId: string
 }
 
+// ==========================================
+// INVITE TYPES
+// ==========================================
 
-// ==========================================
-// MEMBER TYPES
-// ==========================================
+export type GenerateInviteRequest = {
+    serverId: string;
+    userId: string;             // The ID of the user creating the invite
+    options?: {
+        expiresAt?: string;     // e.g., "30m", "1h", "7d", "never"
+        maxUses?: number;       // e.g., 1, 10, 0 (unlimited)
+    };
+}
+
+export type GenerateInviteResponse = {
+    url: string;                // Full link: "http://site.com/invite/abc-123"
+    code: string;               // Just code: "abc-123"
+    expiresAt: Date | null;     // useful for UI to show "Expires in 5 mins"
+    isPermanent: boolean;
+}
+
+export type InviteValidResponse = {
+    serverId: string,
+    serverName: string,
+    serverIcon: string,
+}
+
+export type JoinInviteReqest = {
+    userId: string,
+    serverId: string,
+    inviteCode: string
+}
+
 
 export type GetMemberRequest = {
     userId: string;
@@ -126,16 +169,16 @@ export type GetRoomRequest = {
 
 export type GetRoomResponse = {
     rooms: {
-        serverId :string,
+        serverId: string,
         roomId: string;
         roomName: string;
     }[];
 }
 
 export type DeleteRoomRequest = {
-    userId : string,
-    serverId : string,
-    roomId : string
+    userId: string,
+    serverId: string,
+    roomId: string
 }
 
 // ==========================================
@@ -153,11 +196,12 @@ export type MessageResponse = {
     messageId: string;
     content: string;
     userId: string; // ID of the sender (User Model)
-    // username: string; // Display name
+    username: string; // Display name
     isEdited: boolean;
     createdAt: Date;
-    // Optional: Only include if you need to show Reply UI
-    replyTo?: string; 
+    roomId: string;
+    serverId: string;
+    replyTo?: string;
 }
 
 export interface GetMessagesRequest {
