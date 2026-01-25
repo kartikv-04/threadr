@@ -3,9 +3,8 @@ import bcrypt from 'bcryptjs';
 import { ACCESS_SECRET, REFRESH_SECRET } from '../config/env.js';
 import type { Types } from 'mongoose';
 import logger from '../config/logger.js';
-import { createRoom } from '../services/room.service.js';
-import type { NewRoomRequest } from '../types/types.js';
 import { createServer } from '../services/server.service.js';
+import { userModel } from '../models/user.model.js';
 
 
 type TokenPair = {
@@ -51,35 +50,19 @@ export const newPersonalServer = async (userId: string): Promise<PersonalServer>
     // Create a default Personal Welcome Server with Welcome room in it
     const serverData = {
       userId: userId,
-      serverName: "Welcome"
+      serverName: "Personal"
     }
 
     const personalServer = await createServer(serverData);
 
     logger.debug(`Personal Server has been created for user : ${userId}`);
 
-    // Create a New Room as general name
-    const newRoom: NewRoomRequest = {
-      userId: userId,
-      roomName: "general",
-      serverId: personalServer.serverId,
-    }
-
-    const firstRoom = await createRoom(newRoom);
-    logger.debug("New room Created");
-
-    if (!firstRoom) {
-      logger.info("Error creatig New Room for Server")
-      throw new Error("Error in creating new room for server");
-    }
-
     // return Created Server's Name only
     return {
       serverId: personalServer.serverId,
-      roomId: firstRoom.roomId,
+      roomId: personalServer.roomId,
       serverName: personalServer.serverName,
-      roomName: (firstRoom).roomName
-
+      roomName: "general"
     };
 
   }
@@ -110,4 +93,15 @@ export function calculateExpiryDate(expiresIn?: string): Date | null {
     default:
       return null;
   }
+}
+
+export const generateUsername = async (name: string): Promise<string> => {
+    let username = name.toLowerCase().replace(/\s/g, '');
+    let user = await userModel.findOne({ username });
+    while (user) {
+        const random = Math.floor(Math.random() * 1000);
+        username = `${username}${random}`;
+        user = await userModel.findOne({ username });
+    }
+    return username;
 }

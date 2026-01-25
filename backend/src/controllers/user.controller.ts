@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import { signin, signup } from "../services/user.service.js";
+import { signin, signup, getUserById } from "../services/user.service.js";
 import { NODE_ENV, ACCESS_SECRET, REFRESH_SECRET } from "../config/env.js";
 import { asyncHandler } from "../helper/asyncHandler.js";
 import { Signin, Signup } from "../validator/zod.js";
@@ -20,12 +20,11 @@ export const signUp = asyncHandler(async (req: Request, res: Response) => {
     }
 
     //  Destructure validated data
-    const { name, username, email, password } = validatedData.data;
+    const { name, email, password } = validatedData.data;
 
     //  Create data object that stores these variables
     const data = {
         name,
-        username,
         email,
         password
     }
@@ -163,5 +162,16 @@ export const logout = asyncHandler(async (req: Request, res: Response) => {
     return res.status(200).json({
         success: true,
         message: "Logged out successfully"
+    });
+});
+
+// Get User by ID Controller
+export const getUser = asyncHandler(async (req: Request, res: Response) => {
+    const { userId } = req.params;
+    const user = await getUserById(userId);
+    return res.status(200).json({
+        success: true,
+        message: "User found",
+        data: user
     });
 });

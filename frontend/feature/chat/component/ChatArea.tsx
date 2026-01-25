@@ -8,19 +8,22 @@ import MessageList from "./MessageList";
 import MessageInput from "./MessageInput";
 import { useMessageStore } from "@/feature/chat/MessageStore";
 
+import { useAuthStore } from "@/feature/auth/AuthStore";
+import { useUser } from "@/feature/auth/user.hook";
+
 interface ChatAreaProps {
   serverId: string;
   roomId: string;
   roomName: string;
-  currentUserId?: string;
 }
 
 export const ChatArea = ({
   serverId,
   roomId,
   roomName,
-  currentUserId,
 }: ChatAreaProps) => {
+  const { userId } = useAuthStore();
+  const { data: user } = useUser(userId);
   // 1. Fetch History (Infinite Scroll)
   const { 
     data, 
@@ -75,7 +78,7 @@ export const ChatArea = ({
       <MessageList
         messages={formattedMessages}
         isLoading={status === "pending"}
-        currentUserId={currentUserId}
+        currentUserId={userId}
         // Infinite Scroll Props
         loadMore={fetchNextPage}
         hasMore={hasNextPage}
@@ -90,5 +93,6 @@ export const ChatArea = ({
     </div>
   );
 };
+
 
 export default ChatArea;

@@ -16,14 +16,9 @@ export const useChatSocket = (serverId: string, roomId: string) => {
 
     // 2. Listen for incoming messages
     const handleNewMessage = (newMessage: Message) => {
-      // Add to Zustand store (Instant UI update)
       addMessage(newMessage);
-
-      // Update React Query cache silently to keep them in sync
-      queryClient.setQueryData(["messages", serverId, roomId], (oldData: any) => {
-        if (!oldData || !oldData.pages || oldData.pages.length === 0) return oldData;
-        
-        return oldData; 
+      queryClient.invalidateQueries({
+        queryKey: ["messages", serverId, roomId],
       });
     };
 

@@ -22,6 +22,7 @@ import { useRoomStore } from "@/store/RoomStore";
 import { joinRoom } from "@/lib/socket";
 import { CreateRoomModal } from "./CreateRoomModal";
 import { InviteModal } from "./InviteModal";
+import { useAuthStore } from "@/feature/auth/AuthStore";
 
 interface Room {
   roomId: string;
@@ -106,10 +107,14 @@ const RoomsSection = ({ onAddClick }: { onAddClick: () => void }) => {
   );
 };
 
+import { useUser } from "@/feature/auth/user.hook";
+
 export const RoomSidebar = ({ serverName = "Server" }: RoomSidebarProps) => {
   const { activeServerId } = useServerStore();
   const { activeRoomId, setActiveRoomId } = useRoomStore();
   const { data, isPending, error } = useGetRooms(activeServerId);
+  const { userId } = useAuthStore();
+  const { data: user } = useUser(userId);
 
   // State for Modals & Menu
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -130,7 +135,7 @@ export const RoomSidebar = ({ serverName = "Server" }: RoomSidebarProps) => {
     (roomId: string) => {
       setActiveRoomId(roomId);
     },
-    [setActiveRoomId],
+    [setActiveRoomId]
   );
 
   // Handler for Invite Click
@@ -158,7 +163,7 @@ export const RoomSidebar = ({ serverName = "Server" }: RoomSidebarProps) => {
               size={18}
               className={cn(
                 "text-neutral-400 transition-transform",
-                isMenuOpen && "rotate-180",
+                isMenuOpen && "rotate-180"
               )}
             />
           </button>
@@ -188,7 +193,9 @@ export const RoomSidebar = ({ serverName = "Server" }: RoomSidebarProps) => {
 
                 {/* 2. Standard Settings */}
                 <button className="w-full flex items-center justify-between px-2 py-2 text-neutral-400 hover:bg-neutral-800 hover:text-neutral-200 rounded-sm transition-colors cursor-pointer">
-                  <span className="font-medium text-sm">Server Settings</span>
+                  <span className="font-medium text-sm">
+                    Server Settings
+                  </span>
                   <Settings size={16} />
                 </button>
 
@@ -244,13 +251,15 @@ export const RoomSidebar = ({ serverName = "Server" }: RoomSidebarProps) => {
         <div className="flex items-center gap-2 h-[52px] px-2 bg-neutral-950/80 border-t border-neutral-800/50">
           <div className="relative">
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
-              <span className="text-white text-sm font-semibold">U</span>
+              <span className="text-white text-sm font-semibold">
+                {user?.username?.charAt(0).toUpperCase()}
+              </span>
             </div>
             <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-neutral-950" />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-white truncate">
-              Username
+              {user?.username}
             </p>
             <p className="text-[11px] text-neutral-400 truncate">Online</p>
           </div>
@@ -287,5 +296,7 @@ export const RoomSidebar = ({ serverName = "Server" }: RoomSidebarProps) => {
     </>
   );
 };
+
+
 
 export default RoomSidebar;

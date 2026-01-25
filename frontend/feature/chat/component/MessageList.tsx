@@ -12,6 +12,7 @@ interface MessageListProps {
   loadMore: () => void;
   hasMore: boolean;
   isLoadingMore: boolean;
+  username?: string;
 }
 
 const MessageList = ({
@@ -21,6 +22,7 @@ const MessageList = ({
   loadMore,
   hasMore,
   isLoadingMore,
+  username,
 }: MessageListProps) => {
   const bottomRef = useRef<HTMLDivElement>(null);
   const topRef = useRef<HTMLDivElement>(null);
@@ -123,6 +125,7 @@ const MessageList = ({
               message={message}
               isOwn={message.userId === currentUserId}
               showAvatar={showAvatar}
+              username={username}
             />
           );
         })}
@@ -133,5 +136,6 @@ const MessageList = ({
     </div>
   );
 };
+
 
 export default MessageList;
