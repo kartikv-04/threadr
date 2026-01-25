@@ -84,7 +84,7 @@ export const getServerList = async (data: GetServerRequest): Promise<GetServerRe
     const formatedServer = serverArray.map( list => {
         const server = list.server as any as { _id : string, name: string; icon: string };
         return {
-                serverId : server._id.toString(),
+            serverId : server._id.toString(),
             name: server.name,
             icon: server.icon
         };

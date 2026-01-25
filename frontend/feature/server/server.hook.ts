@@ -1,11 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getServer, createServer } from "./api";
+import { getServer, createServer } from "./server.api";
 import { useAuthStore } from "@/feature/auth/AuthStore";
-import { CreateServerRequest } from "./type";
+import { CreateServerRequest } from "./server.type";
 
 export const useGetServer = () => {
     const token = useAuthStore(state => state.accessToken);
-    return useQuery({ queryKey: ['servers'], queryFn: getServer, enabled: !!token })
+    return useQuery({ 
+        queryKey: ['servers'], 
+        queryFn: getServer, 
+        enabled: !!token,
+        staleTime: 1000 * 60 * 5, 
+    })
 }
 
 export const useCreateServer = () => {

@@ -1,4 +1,4 @@
-import { api } from "../../../lib/api";
+import { api } from "../../lib/api";
 import { GetRoomResponse, NewRoomRequest, NewRoomResponse, GenerateInviteResponse, GetInviteInfoResponse, JoinServerRequest } from "./type";
 
 export const getRooms = async (serverId: string): Promise<GetRoomResponse> => {
