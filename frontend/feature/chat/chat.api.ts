@@ -8,8 +8,9 @@ import {
 
 // Send a message to a room
 export const sendMessage = async (data: SendMessageRequest): Promise<SendMessageResponse> => {
-    const res = await api.post(`/m/${data.serverId}/${data.roomId}`, {
-        content: data.content
+    const res = await api.post(`/rooms/${data.roomId}/messages`, {
+        content: data.content,
+        serverId: data.serverId // Pass in body as per REST refactor
     });
     // Backend returns: { success, message, data: {...} }
     return res.data.data;
@@ -18,11 +19,12 @@ export const sendMessage = async (data: SendMessageRequest): Promise<SendMessage
 // Get messages from a room with pagination
 export const getMessages = async (payload: GetMessagesRequest): Promise<GetMessagesResponse> => {
     try {
-        const { data } = await api.get(`/m/${payload.serverId}/${payload.roomId}`, {
+        const { data } = await api.get(`/rooms/${payload.roomId}/messages`, {
 
             params: {
                 page: payload.page,
-                limit: payload.limit
+                limit: payload.limit,
+                serverId: payload.serverId // Pass in query
             }
         });
         // Backend returns: { success, message, data: [...messages] }

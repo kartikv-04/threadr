@@ -8,10 +8,10 @@ import { getInviteInfoController, joinInviteController } from "../controllers/in
 
 const router = Router();
 
-router.use('/auth', authRouter);
-router.use('/s', authenticate, serverRouter);
-router.use('/r', authenticate, roomRouter);
-router.use('/m', authenticate, messageRouter);
+router.use('/users', authRouter);
+router.use('/servers', authenticate, serverRouter);
+router.use('/servers/:serverId/rooms', authenticate, roomRouter);
+router.use('/rooms/:roomId/messages', authenticate, messageRouter);
 router.get('/invite/:code', getInviteInfoController);
 router.post('/invite/join', authenticate, joinInviteController);
 

@@ -11,7 +11,7 @@ import {
 //  Get Rooms
 export const getRooms = async (serverId: string): Promise<GetRoomResponse> => {
     try {
-        const { data } = await api.get(`/r/${serverId}`);
+        const { data } = await api.get(`/servers/${serverId}/rooms`);
 
         // Optional Chaining (?.) prevents crash if data.data is null
         return { rooms: data.data?.rooms || [] };
@@ -26,7 +26,7 @@ export const getRooms = async (serverId: string): Promise<GetRoomResponse> => {
 // Create Room
 export const createRoom = async (payload: NewRoomRequest): Promise<NewRoomResponse> => {
 
-    const { data } = await api.post(`/r/${payload.serverId}`, {
+    const { data } = await api.post(`/servers/${payload.serverId}/rooms`, {
         roomName: payload.roomName
     });
 
@@ -42,7 +42,7 @@ export const createRoom = async (payload: NewRoomRequest): Promise<NewRoomRespon
 
 // Generate Invite Link
 export const generateInvite = async (serverId: string): Promise<GenerateInviteResponse> => {
-    const { data } = await api.post(`/s/${serverId}/invite`);
+    const { data } = await api.post(`/servers/${serverId}/invite`);
     return data.data;
 }
 
@@ -60,5 +60,5 @@ export const joinServer = async (payload: JoinServerRequest): Promise<{ serverId
 
 // Delete Room
 export const deleteRoom = async (serverId: string, roomId: string): Promise<void> => {
-    await api.delete(`/r/${serverId}/${roomId}`);
+    await api.delete(`/servers/${serverId}/rooms/${roomId}`);
 }

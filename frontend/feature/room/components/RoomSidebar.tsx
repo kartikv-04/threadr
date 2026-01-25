@@ -23,6 +23,7 @@ import { CreateRoomModal } from "./CreateRoomModal";
 import { InviteModal } from "./InviteModal";
 import { UserPanel } from "@/components/UserPanel";
 import { useDeleteServer } from "@/feature/server/server.hook";
+import { ConfirmModal } from "@/components/ConfirmModal";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -85,7 +86,7 @@ const RoomItem = ({ room, isActive, onClick, onDelete }: RoomItemProps) => {
               className="w-48 bg-neutral-950 border-neutral-800 text-neutral-200"
             >
               <DropdownMenuItem
-                className="cursor-pointer text-rose-500 focus:bg-rose-600 focus:text-white"
+                className="cursor-pointer text-red-500 focus:bg-red-800 focus:text-white"
                 onClick={(e) => {
                   e.stopPropagation();
                   onDelete?.(room.roomId);
@@ -145,6 +146,11 @@ export const RoomSidebar = () => {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  // Deletion Modal States
+  const [isDeleteServerModalOpen, setIsDeleteServerModalOpen] = useState(false);
+  const [isDeleteRoomModalOpen, setIsDeleteRoomModalOpen] = useState(false);
+  const [roomToDelete, setRoomToDelete] = useState<{ id: string, name: string } | null>(null);
+
   const rooms = useMemo(() => data?.rooms || [], [data?.rooms]);
 
   useEffect(() => {
@@ -160,23 +166,38 @@ export const RoomSidebar = () => {
   );
 
   const handleDeleteServer = () => {
-    if (activeServerId && window.confirm("Are you sure you want to delete this server?")) {
+    setIsDeleteServerModalOpen(true);
+    setIsMenuOpen(false);
+  };
+
+  const confirmDeleteServer = () => {
+    if (activeServerId) {
       deleteServer(activeServerId, {
         onSuccess: () => {
           setActiveServerId(null);
-          setIsMenuOpen(false);
+          setIsDeleteServerModalOpen(false);
         }
       });
     }
   };
 
   const handleDeleteRoom = (roomId: string) => {
-    if (activeServerId && window.confirm("Are you sure you want to delete this room?")) {
-      deleteRoom({ serverId: activeServerId, roomId }, {
+    const room = rooms.find(r => r.roomId === roomId);
+    if (room) {
+      setRoomToDelete({ id: room.roomId, name: room.roomName });
+      setIsDeleteRoomModalOpen(true);
+    }
+  };
+
+  const confirmDeleteRoom = () => {
+    if (activeServerId && roomToDelete) {
+      deleteRoom({ serverId: activeServerId, roomId: roomToDelete.id }, {
         onSuccess: () => {
-          if (activeRoomId === roomId) {
+          if (activeRoomId === roomToDelete.id) {
             setActiveRoomId(null);
           }
+          setIsDeleteRoomModalOpen(false);
+          setRoomToDelete(null);
         }
       });
     }
@@ -258,7 +279,7 @@ export const RoomSidebar = () => {
                 {/* 3. Danger Zone */}
                 <button
                   onClick={handleDeleteServer}
-                  className="w-full flex items-center justify-between px-2 py-2 text-rose-500 hover:bg-rose-600 hover:text-white rounded-sm transition-colors cursor-pointer"
+                  className="w-full flex items-center justify-between px-2 py-2 text-red-600 hover:bg-red-900 hover:text-white rounded-sm transition-colors cursor-pointer"
                 >
                   <span className="font-medium text-sm">Delete Server</span>
                   <Trash size={16} />
@@ -318,6 +339,34 @@ export const RoomSidebar = () => {
             onClose={() => setIsInviteModalOpen(false)}
             serverId={activeServerId}
             serverName={activeServerName || "Server"}
+          />
+          <ConfirmModal
+            isOpen={isDeleteServerModalOpen}
+            onClose={() => setIsDeleteServerModalOpen(false)}
+            onConfirm={confirmDeleteServer}
+            title="Delete server"
+            confirmText="Delete server"
+            isPending={false} // Add isPending from hook if needed
+            description={
+              <>
+                This will permanently delete <span className="font-semibold text-neutral-200">“{activeServerName || "this server"}”</span> and all of its data.<br />
+                <span className="text-red-400 font-medium">This action cannot be undone.</span>
+              </>
+            }
+          />
+          <ConfirmModal
+            isOpen={isDeleteRoomModalOpen}
+            onClose={() => setIsDeleteRoomModalOpen(false)}
+            onConfirm={confirmDeleteRoom}
+            title="Delete room"
+            confirmText="Delete room"
+            isPending={false}
+            description={
+              <>
+                Are you sure you want to delete <span className="text-red-400">#{roomToDelete?.name || "this room"}</span>?<br />
+                This will remove all messages and history.
+              </>
+            }
           />
         </>
       )}

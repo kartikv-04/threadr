@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import { Message } from "../chat.type";
 import MessageItem from "./MessageItem";
 import { Loader2 } from "lucide-react";
@@ -28,30 +28,33 @@ const MessageList = ({
   const topRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // State to track if  auto-scroll
-  const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
-
-  // 1. Auto-scroll logic
-  useEffect(() => {
-    // Only auto-scroll if  already near the bottom OR it's the first load
-    if (shouldAutoScroll && bottomRef.current) {
-      bottomRef.current.scrollIntoView({ behavior: "smooth" });
+  // Robust auto-scroll logic
+  const scrollToBottom = () => {
+    if (scrollContainerRef.current) {
+      // Direct manipulation is often more reliable than scrollIntoView
+      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
     }
-  }, [messages, shouldAutoScroll]);
+  };
 
-  // 2. Infinite Scroll Observer (Detect hitting the top)
+  useLayoutEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    // Check if user is near bottom before update
+    const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+
+    // Scroll to bottom if already at bottom OR if it's the first load
+    if (isAtBottom || messages.length <= 50) {
+      scrollToBottom();
+    }
+  }, [messages]);
+
+  // Infinite Scroll Observer (Detect hitting the top)
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasMore && !isLoadingMore) {
-          // Save current scroll height to restore position after loading
-          const container = scrollContainerRef.current;
-          if (container) {
-            const currentScrollHeight = container.scrollHeight;
-
-            loadMore();
-
-          }
+          loadMore();
         }
       },
       { threshold: 1.0 }
@@ -64,16 +67,6 @@ const MessageList = ({
     return () => observer.disconnect();
   }, [hasMore, isLoadingMore, loadMore]);
 
-  // 3. Handle user scroll to disable auto-scroll
-  const handleScroll = () => {
-    if (!scrollContainerRef.current) return;
-    const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
-
-    // If user is near bottom (within 100px), enable auto-scroll
-    const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
-    setShouldAutoScroll(isNearBottom);
-  };
-
   if (isLoading) {
     return (
       <div className="flex-1 flex items-center justify-center text-neutral-400">
@@ -85,8 +78,7 @@ const MessageList = ({
   return (
     <div
       ref={scrollContainerRef}
-      onScroll={handleScroll}
-      className="flex-1 overflow-y-auto scrollbar-hide py-4 px-2 flex flex-col"
+      className="flex-1 overflow-y-auto py-4 px-2 flex flex-col"
     >
       {/* Top Anchor for Infinite Scroll */}
       <div ref={topRef} className="h-4 w-full flex justify-center">
@@ -125,6 +117,7 @@ const MessageList = ({
               message={message}
               isOwn={message.userId === currentUserId}
               showAvatar={showAvatar}
+              username={username}
             />
           );
         })}
@@ -135,6 +128,5 @@ const MessageList = ({
     </div>
   );
 };
-
 
 export default MessageList;

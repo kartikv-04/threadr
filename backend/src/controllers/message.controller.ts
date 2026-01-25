@@ -10,8 +10,8 @@ import { ValidationError } from "../helper/errorClass.js";
 export const sendMessage = asyncHandler(async (req: Request, res: Response) => {
     // 1 Destructure req body
     const userId = (req as any)?.user?.id?.toString();
-    const { serverId, roomId } = req.params;
-    const { content } = req.body;
+    const { roomId } = req.params;
+    const { content, serverId } = req.body;
 
     //  Validate
     const validatedData = SendMessageSchema.safeParse({ userId, serverId, roomId, content });
@@ -47,14 +47,15 @@ export const getMessage = asyncHandler(async (req: Request, res: Response) => {
     //  Get parameters from query (RESTful approach for GET requests)
     const userId = (req as any)?.user?.id?.toString();
 
-    // Get serverId and roomId from params
-    const { serverId, roomId } = req.params;
+    // Get roomId from params. serverId will be fetched from room in service or passed via query if needed.
+    const { roomId } = req.params;
+    const serverId = req.query.serverId as string;
 
     //  Validate Basic Fields
     const validatedData = RecieveMessage.safeParse({ userId, serverId, roomId });
 
     // Hanlde Error
-    if(!validatedData.success){
+    if (!validatedData.success) {
         throw new ValidationError("Validation Failed!")
     }
 

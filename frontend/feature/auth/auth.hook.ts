@@ -18,7 +18,7 @@ export const useSignIn = () => {
             useRoomStore.getState().reset();
             loginUser(res.data.user.accessToken, res.data.user.id)
         },
-        onError: (error) => console.log("error while signin user", error)
+        onError: (error) => { }
     })
     return mutation;
 };

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, KeyboardEvent } from "react";
+import { useState, KeyboardEvent, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Plus, SendHorizontal } from "lucide-react";
 
@@ -18,6 +18,14 @@ const MessageInput = ({
     roomName = "room"
 }: MessageInputProps) => {
     const [message, setMessage] = useState("");
+    const inputRef = useRef<HTMLTextAreaElement>(null);
+
+    // Focus on mount and whenever input becomes enabled
+    useEffect(() => {
+        if (!disabled) {
+            inputRef.current?.focus();
+        }
+    }, [disabled]);
 
     const handleSend = () => {
         const trimmed = message.trim();
@@ -57,8 +65,8 @@ const MessageInput = ({
                     <Plus size={20} />
                 </button>
 
-                {/* Message input */}
                 <textarea
+                    ref={inputRef}
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     onKeyDown={handleKeyDown}

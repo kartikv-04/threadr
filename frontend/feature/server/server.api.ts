@@ -3,7 +3,7 @@ import { GetServerResponse, CreateServerRequest, NewServerResponse } from "./ser
 
 export const getServer = async (): Promise<GetServerResponse> => {
     try {
-        const res = await api.get("/s/");
+        const res = await api.get("/servers/");
         const servers = res.data.data;
 
         // Backend returns: { success, message, data: [...servers] }
@@ -19,7 +19,7 @@ export const getServer = async (): Promise<GetServerResponse> => {
 
 export const createServer = async (payload: CreateServerRequest): Promise<NewServerResponse> => {
 
-    const res = await api.post("/s/", payload);
+    const res = await api.post("/servers/", payload);
     const server = res.data;
 
     // Backend returns: { success, message, data: [...servers] }
@@ -33,5 +33,5 @@ export const createServer = async (payload: CreateServerRequest): Promise<NewSer
 }
 
 export const deleteServer = async (serverId: string): Promise<void> => {
-    await api.delete(`/s/${serverId}`);
+    await api.delete(`/servers/${serverId}`);
 }

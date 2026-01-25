@@ -22,10 +22,10 @@ export const newRoom = asyncHandler(async (req: Request, res: Response) => {
     const validatedData = NewRoom.safeParse({ userId, serverId, roomName });
 
     // Handle Error
-    if(!validatedData.success){
-            logger.error(validatedData.error, "Validation error");
-            throw new ValidationError("Validation Failed!")
-        }
+    if (!validatedData.success) {
+        logger.error(validatedData.error, "Validation error");
+        throw new ValidationError("Validation Failed!")
+    }
 
     //  Creat room
     const result = await createRoom(validatedData.data);
@@ -50,7 +50,7 @@ export const getRoom = asyncHandler(async (req: Request, res: Response) => {
     const validatedData = GetRoomListSchema.safeParse({ userId, serverId });
 
     // Handle Error
-    if(!validatedData.success){
+    if (!validatedData.success) {
         throw new ValidationError("Validation Failed!")
     }
 
@@ -79,17 +79,13 @@ export const deleteRoomController = asyncHandler(async (req: Request, res: Respo
     const validatedData = DeleteRoomSchema.safeParse({ userId, serverId, roomId });
 
     // Handle Erorr
-    if(!validatedData.success){
-            throw new ValidationError("Validation Failed!")
-        }
+    if (!validatedData.success) {
+        throw new ValidationError("Validation Failed!")
+    }
 
     // Delete Server
     const result = await deleteRoom(validatedData.data);
 
     //  Return result
-    return res.status(200).json({
-        success: true,
-        message: "Room Deleted Successfully",
-        data : result
-    })
+    return res.status(204).send();
 });

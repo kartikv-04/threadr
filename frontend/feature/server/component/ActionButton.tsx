@@ -12,7 +12,7 @@ interface ActionButtonProps {
 
 const ActionButton = ({ icon, label, onClick, variant = "default" }: ActionButtonProps) => {
     return (
-        <div className="relative group flex items-center justify-center">
+        <div className="relative group flex items-center justify-center gome">
             {/* Button */}
             <button
                 onClick={onClick}
