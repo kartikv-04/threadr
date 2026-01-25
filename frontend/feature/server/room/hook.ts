@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getRooms, createRoom, generateInvite, getInviteInfo, joinServer } from "./api";
-import { useAuthStore } from "@/store/AuthStore";
+import { useAuthStore } from "@/feature/auth/AuthStore";
 import { NewRoomRequest, JoinServerRequest } from "./type";
 
 export const useGetRooms = (serverId: string | null) => {

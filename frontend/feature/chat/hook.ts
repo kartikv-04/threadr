@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { getMessages } from "./api";
-import { useAuthStore } from "@/store/AuthStore";
+import { useAuthStore } from "@/feature/auth/AuthStore";
 import { SendMessageRequest } from "./type";
 import { sendMessage as socketSendMessage } from "@/lib/socket";
 import { useState } from "react";

@@ -7,7 +7,7 @@ import { RoomSidebar } from "@/feature/server/room";
 import { ChatArea } from "@/feature/chat";
 import { useServerStore } from "@/store/ServerStore";
 import { useRoomStore } from "@/store/RoomStore";
-import { useAuthStore } from "@/store/AuthStore";
+import { useAuthStore } from "@/feature/auth/AuthStore";
 import { Mic, Headphones, Cog } from "lucide-react";
 
 // User Panel Component - Shows at bottom when no server selected
@@ -74,7 +74,7 @@ export default function Page() {
     const { accessToken, userId, _hasHydrated } = useAuthStore();
 
     useEffect(() => {
-        if ( _hasHydrated && !accessToken) {
+        if (_hasHydrated && !accessToken) {
             router.push("/login");
         }
     }, [accessToken, _hasHydrated, router]);
@@ -88,7 +88,7 @@ export default function Page() {
         );
     }
 
-    if(!accessToken) return null;
+    if (!accessToken) return null;
 
 
 

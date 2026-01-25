@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getServer, createServer } from "./api";
-import { useAuthStore } from "@/store/AuthStore";
+import { useAuthStore } from "@/feature/auth/AuthStore";
 import { CreateServerRequest } from "./type";
 
 export const useGetServer = () => {
