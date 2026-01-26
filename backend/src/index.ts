@@ -7,7 +7,7 @@ import { Server } from 'socket.io';
 import { Socket } from 'socket.io';
 import logger from './config/logger.js';
 import { connectDB } from './config/db.js';
-import indexRouter from '../src/routes/index.route.js';
+import indexRouter from "./routes/index.route.js";
 import { socketAuth } from './middleware/socketAuth.js';
 import { ValidationError } from './helper/errorClass.js';
 import { errorHandler } from './middleware/errorMiddleware.js';
