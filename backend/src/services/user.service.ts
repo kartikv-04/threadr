@@ -1,5 +1,5 @@
 import { userModel } from '../models/user.model.js';
-import { generateToken, hashPassword, newPersonalServer } from '../helper/utility.js';
+import { generateToken, newPersonalServer } from '../helper/utility.js';
 import logger from '../config/logger.js';
 import type { SignupRequest, SigninResponse, SignupResponse, SigninRequest, } from '../types/types.js';
 import bcrypt from 'bcryptjs';
