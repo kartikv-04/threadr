@@ -5,7 +5,7 @@ import { getSignup, getSignin, logout } from "./auth.api";
 import { useAuthStore } from "./AuthStore";
 import { useRouter } from "next/navigation";
 import { useServerStore } from "../server/ServerStore";
-import { useRoomStore } from "@/store/RoomStore";
+import { useRoomStore } from "@/feature/room/RoomStore";
 
 // Hook to Post Signin User
 export const useSignIn = () => {

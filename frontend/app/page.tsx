@@ -6,11 +6,10 @@ import { ServerSidebar } from "@/feature/server/component/ServerSidebar";
 import { RoomSidebar } from "@/feature/room/components/RoomSidebar";
 import { ChatArea } from "@/feature/chat/component/ChatArea";
 import { useServerStore } from "@/feature/server/ServerStore";
-import { useRoomStore } from "@/store/RoomStore";
+import { useRoomStore } from "@/feature/room/RoomStore";
 import { useAuthStore } from "@/feature/auth/AuthStore";
 import { Mic, Headphones, Cog } from "lucide-react";
 import { UserPanel } from "@/components/UserPanel";
-
 
 // Home Sidebar - Shows when no server is selected
 const HomeSidebar = () => {

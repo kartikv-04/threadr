@@ -17,8 +17,13 @@ import {
 } from "lucide-react";
 import { useGetRooms, useDeleteRoom, useCreateRoom } from "../hook";
 import { useServerStore } from "@/feature/server/ServerStore";
-import { useRoomStore } from "@/store/RoomStore";
-import { joinRoom, joinServer, leaveServer as leaveSocketServer, onRoomUpdate } from "@/lib/socket";
+import { useRoomStore } from "@/feature/room/RoomStore";
+import {
+  joinRoom,
+  joinServer,
+  leaveServer as leaveSocketServer,
+  onRoomUpdate,
+} from "@/lib/socket";
 import { useQueryClient } from "@tanstack/react-query";
 import { CreateRoomModal } from "./CreateRoomModal";
 import { InviteModal } from "./InviteModal";
@@ -48,7 +53,13 @@ interface RoomItemProps {
   onDelete?: (roomId: string) => void;
 }
 
-const RoomItem = ({ room, isActive, isAdmin, onClick, onDelete }: RoomItemProps) => {
+const RoomItem = ({
+  room,
+  isActive,
+  isAdmin,
+  onClick,
+  onDelete,
+}: RoomItemProps) => {
   return (
     <div className="group relative mx-2">
       <button
@@ -108,7 +119,13 @@ const RoomItem = ({ room, isActive, isAdmin, onClick, onDelete }: RoomItemProps)
 };
 
 // Rooms Section Header
-const RoomsSection = ({ onAddClick, isAdmin }: { onAddClick: () => void, isAdmin?: boolean }) => {
+const RoomsSection = ({
+  onAddClick,
+  isAdmin,
+}: {
+  onAddClick: () => void;
+  isAdmin?: boolean;
+}) => {
   const [isOpen, setIsOpen] = useState(true);
 
   return (
@@ -140,7 +157,8 @@ const RoomsSection = ({ onAddClick, isAdmin }: { onAddClick: () => void, isAdmin
 };
 
 export const RoomSidebar = () => {
-  const { activeServerId, activeServerName, activeRole, setActiveServerId } = useServerStore();
+  const { activeServerId, activeServerName, activeRole, setActiveServerId } =
+    useServerStore();
   const { activeRoomId, setActiveRoomId } = useRoomStore();
   const { data, isPending, error } = useGetRooms(activeServerId);
 
@@ -159,7 +177,10 @@ export const RoomSidebar = () => {
   const [isDeleteServerModalOpen, setIsDeleteServerModalOpen] = useState(false);
   const [isLeaveServerModalOpen, setIsLeaveServerModalOpen] = useState(false);
   const [isDeleteRoomModalOpen, setIsDeleteRoomModalOpen] = useState(false);
-  const [roomToDelete, setRoomToDelete] = useState<{ id: string, name: string } | null>(null);
+  const [roomToDelete, setRoomToDelete] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
   const rooms = useMemo(() => data?.rooms || [], [data?.rooms]);
 
@@ -199,7 +220,7 @@ export const RoomSidebar = () => {
     (roomId: string, roomName: string) => {
       setActiveRoomId(roomId, roomName);
     },
-    [setActiveRoomId]
+    [setActiveRoomId],
   );
 
   const handleDeleteServer = () => {
@@ -221,9 +242,11 @@ export const RoomSidebar = () => {
         },
         onError: (error: any) => {
           setIsDeleteServerModalOpen(false);
-          const message = error?.response?.data?.message || "Only the server admin can delete this server.";
+          const message =
+            error?.response?.data?.message ||
+            "Only the server admin can delete this server.";
           alert(message);
-        }
+        },
       });
     }
   };
@@ -237,15 +260,16 @@ export const RoomSidebar = () => {
         },
         onError: (error: any) => {
           setIsLeaveServerModalOpen(false);
-          const message = error?.response?.data?.message || "Failed to leave the server.";
+          const message =
+            error?.response?.data?.message || "Failed to leave the server.";
           alert(message);
-        }
+        },
       });
     }
   };
 
   const handleDeleteRoom = (roomId: string) => {
-    const room = rooms.find(r => r.roomId === roomId);
+    const room = rooms.find((r) => r.roomId === roomId);
     if (room) {
       setRoomToDelete({ id: room.roomId, name: room.roomName });
       setIsDeleteRoomModalOpen(true);
@@ -254,21 +278,26 @@ export const RoomSidebar = () => {
 
   const confirmDeleteRoom = () => {
     if (activeServerId && roomToDelete) {
-      deleteRoom({ serverId: activeServerId, roomId: roomToDelete.id }, {
-        onSuccess: () => {
-          if (activeRoomId === roomToDelete.id) {
-            setActiveRoomId(null);
-          }
-          setIsDeleteRoomModalOpen(false);
-          setRoomToDelete(null);
+      deleteRoom(
+        { serverId: activeServerId, roomId: roomToDelete.id },
+        {
+          onSuccess: () => {
+            if (activeRoomId === roomToDelete.id) {
+              setActiveRoomId(null);
+            }
+            setIsDeleteRoomModalOpen(false);
+            setRoomToDelete(null);
+          },
+          onError: (error: any) => {
+            setIsDeleteRoomModalOpen(false);
+            setRoomToDelete(null);
+            const message =
+              error?.response?.data?.message ||
+              "Only the server admin can delete rooms.";
+            alert(message);
+          },
         },
-        onError: (error: any) => {
-          setIsDeleteRoomModalOpen(false);
-          setRoomToDelete(null);
-          const message = error?.response?.data?.message || "Only the server admin can delete rooms.";
-          alert(message);
-        }
-      });
+      );
     }
   };
 
@@ -295,7 +324,7 @@ export const RoomSidebar = () => {
               size={18}
               className={cn(
                 "text-neutral-400 transition-transform",
-                isMenuOpen && "rotate-180"
+                isMenuOpen && "rotate-180",
               )}
             />
           </button>
@@ -377,7 +406,10 @@ export const RoomSidebar = () => {
 
         {/* Rooms List */}
         <div className="flex-1 overflow-y-auto py-3 scrollbar-hide">
-          <RoomsSection onAddClick={() => setIsCreateModalOpen(true)} isAdmin={isAdmin} />
+          <RoomsSection
+            onAddClick={() => setIsCreateModalOpen(true)}
+            isAdmin={isAdmin}
+          />
 
           {isPending ? (
             <div className="flex items-center justify-center py-6">
@@ -436,8 +468,15 @@ export const RoomSidebar = () => {
             isPending={false} // Add isPending from hook if needed
             description={
               <>
-                This will permanently delete <span className="font-semibold text-neutral-200">“{activeServerName || "this server"}”</span> and all of its data.<br />
-                <span className="text-red-400 font-medium">This action cannot be undone.</span>
+                This will permanently delete{" "}
+                <span className="font-semibold text-neutral-200">
+                  “{activeServerName || "this server"}”
+                </span>{" "}
+                and all of its data.
+                <br />
+                <span className="text-red-400 font-medium">
+                  This action cannot be undone.
+                </span>
               </>
             }
           />
@@ -450,7 +489,11 @@ export const RoomSidebar = () => {
             isPending={false}
             description={
               <>
-                Are you sure you want to leave <span className="font-semibold text-neutral-200">“{activeServerName || "this server"}”</span>?<br />
+                Are you sure you want to leave{" "}
+                <span className="font-semibold text-neutral-200">
+                  “{activeServerName || "this server"}”
+                </span>
+                ?<br />
                 You will need a new invite to join back.
               </>
             }
@@ -464,7 +507,11 @@ export const RoomSidebar = () => {
             isPending={false}
             description={
               <>
-                Are you sure you want to delete <span className="text-red-400">#{roomToDelete?.name || "this room"}</span>?<br />
+                Are you sure you want to delete{" "}
+                <span className="text-red-400">
+                  #{roomToDelete?.name || "this room"}
+                </span>
+                ?<br />
                 This will remove all messages and history.
               </>
             }
