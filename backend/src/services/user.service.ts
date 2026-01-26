@@ -18,9 +18,6 @@ export const signup = async (user: Omit<SignupRequest, 'username'>): Promise<Sig
         throw new ConflictError("A user with this email address already exists.");
     }
 
-    // Create hash password
-    const hashedPassword = await hashPassword(user.password);
-
     // Generate username
     const username = await generateUsername(user.name);
     logger.info(`Generated username for ${user.name}: ${username}`);
@@ -30,7 +27,7 @@ export const signup = async (user: Omit<SignupRequest, 'username'>): Promise<Sig
         username,
         name: user.name,
         email: user.email,
-        password: hashedPassword
+        password: user.password
     })
 
     // Generate refresh and acess tokens for user
