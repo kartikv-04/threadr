@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, DM_Sans } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/lib/provider";
 import { SocketProvider } from "@/lib/SocketProvider";
+import { MobileWarning } from "@/components/MobileWarning";
 
 const dmSans = DM_Sans({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -31,6 +32,7 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased dark`}>
         <QueryProvider>
           <SocketProvider>
+            <MobileWarning />
             {children}
           </SocketProvider>
         </QueryProvider>

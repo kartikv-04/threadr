@@ -2,6 +2,8 @@
 
 Threadr is a real-time, server-based chat application designed for seamless group communication. It provides a premium user experience with instant updates, role-based access control, and a sleek, Discord-inspired interface.
 
+Note: Threadr is optimized for desktop and laptop screens (wide screens) and is not currently supported on mobile devices.
+
 ## Features
 
 - **Real-Time Messaging**: Built on Socket.io for instantaneous communication and UI synchronization.
