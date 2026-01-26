@@ -5,15 +5,15 @@ import logger from "../config/logger.js";
 
 export const errorHandler = (
     err: any,
-    req: Request,
+    _req: Request,
     res: Response,
-    next: NextFunction
+    _next: NextFunction
 ) => {
     // Handle Zod validation errors
     if (err instanceof ZodError) {
         logger.warn({
             errors: err.issues
-        }, `Validation Failed: ${req.method} ${req.path}`);
+        }, `Validation Failed: ${_req.method} ${_req.path}`);
 
         return res.status(400).json({
             success: false,
@@ -41,15 +41,15 @@ export const errorHandler = (
         if (err.statusCode >= 500) {
             logger.error({
                 statusCode: err.statusCode,
-                path: req.path,
-                method: req.method,
+                path: _req.path,
+                method: _req.method,
                 stack: err.stack
             }, `${err.message}`);
         } else {
             logger.warn({
                 statusCode: err.statusCode,
-                path: req.path,
-                method: req.method
+                path: _req.path,
+                method: _req.method
             },`${err.message}`);
         }
 
@@ -61,7 +61,7 @@ export const errorHandler = (
 
     // Handle Mongoose validation errors
     if (err.name === 'ValidationError') {
-        logger.warn(`Mongoose Validation Failed: ${req.method} ${req.path}`);
+        logger.warn(`Mongoose Validation Failed: ${_req.method} ${_req.path}`);
         
         return res.status(400).json({
             success: false,
@@ -86,7 +86,7 @@ export const errorHandler = (
 
     // Handle JWT errors
     if (err.name === 'JsonWebTokenError') {
-        logger.warn(`Invalid JWT token: ${req.method} ${req.path}`);
+        logger.warn(`Invalid JWT token: ${_req.method} ${_req.path}`);
         
         return res.status(401).json({
             success: false,
@@ -95,7 +95,7 @@ export const errorHandler = (
     }
 
     if (err.name === 'TokenExpiredError') {
-        logger.warn(`Expired JWT token: ${req.method} ${req.path}`);
+        logger.warn(`Expired JWT token: ${_req.method} ${_req.path}`);
         
         return res.status(401).json({
             success: false,
@@ -107,9 +107,9 @@ export const errorHandler = (
     logger.error({
         message: err.message,
         stack: err.stack,
-        path: req.path,
-        method: req.method,
-        body: req.body
+        path: _req.path,
+        method: _req.method,
+        body: _req.body
     },'Unexpected Error');
 
     // Default error response
