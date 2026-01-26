@@ -5,10 +5,10 @@ import { userModel } from "../models/user.model.js";
 import logger from "../config/logger.js";
 
 
-export const authenticate = async (req: Request, res: Response, next: NextFunction) => {
+export const authenticate = async (_req: Request, res: Response, _next: NextFunction) => {
     try {
         // 1️. Get Authorization header
-        const authHeader = req.headers.authorization;
+        const authHeader = _req.headers.authorization;
 
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
             return res.status(401).json({
@@ -38,10 +38,10 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
         }
 
         // 5️.  Attach user to request (no password)
-        (req as any).user = { id: user._id };
+        (_req as any).user = { id: user._id };
 
         // 6️.  Continue
-        next();
+        return _next();
     } catch (error: any) {
         logger.error("Auth middleware error", error);
 
