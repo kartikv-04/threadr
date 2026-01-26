@@ -55,8 +55,14 @@ api.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as AxiosConfigWithRetry;
 
-    // Check if error is 401 (Unauthorized) and we haven't retried yet
-    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+    // Skip refresh logic for specific routes (login, signup, etc.)
+    const skipRefresh = 
+      originalRequest.url?.includes("/users/signin") || 
+      originalRequest.url?.includes("/users/signup") ||
+      originalRequest.url?.includes("/users/refresh");
+
+    // Check if error is 401 (Unauthorized) and we haven't retried yet and not skipping refreh
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry && !skipRefresh) {
       
       // CASE A: If ALREADY refreshing, add this request to the queue
       if (isRefreshing) {
@@ -79,7 +85,7 @@ api.interceptors.response.use(
       try {
         // 1. Call the refresh endpoint
         const response = await axios.post(
-          `${API_BASE_URL}/auth/refresh`,
+          `${API_BASE_URL}/users/refresh`,
           {},
           { withCredentials: true }
         );

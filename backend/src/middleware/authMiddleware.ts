@@ -9,7 +9,6 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
     try {
         // 1️. Get Authorization header
         const authHeader = req.headers.authorization;
-        // console.log(authHeader, "dd");
 
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
             return res.status(401).json({

@@ -8,6 +8,9 @@ import ActionButton from "./ActionButton";
 import CreateServerModal from "./CreateServerModal";
 import { useGetServer } from "../server.hook";
 import { useServerStore } from "@/feature/server/ServerStore";
+import { useEffect } from "react";
+import { socket } from "@/lib/socket";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Server {
   serverId: string;
@@ -22,6 +25,18 @@ export const ServerSidebar = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const servers: Server[] = data?.server || [];
+
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    socket.on("server:deleted", () => {
+      queryClient.invalidateQueries({ queryKey: ["servers"] });
+    });
+
+    return () => {
+      socket.off("server:deleted");
+    };
+  }, [queryClient]);
 
   return (
     <>

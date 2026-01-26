@@ -32,6 +32,12 @@ export const newRoom = asyncHandler(async (req: Request, res: Response) => {
 
     logger.info(`New Room Created Successfully : ${result.roomName}`);
 
+    // Emit event to server room
+    const io = req.app.get("io");
+    if (io) {
+        io.to(`server:${serverId}`).emit("room:created", result);
+    }
+
     //  Return new room
     return res.status(201).json({
         success: true,
@@ -84,7 +90,13 @@ export const deleteRoomController = asyncHandler(async (req: Request, res: Respo
     }
 
     // Delete Server
-    const result = await deleteRoom(validatedData.data);
+    await deleteRoom(validatedData.data);
+
+    // Emit event to server room
+    const io = req.app.get("io");
+    if (io) {
+        io.to(`server:${serverId}`).emit("room:deleted", { roomId, serverId });
+    }
 
     //  Return result
     return res.status(204).send();

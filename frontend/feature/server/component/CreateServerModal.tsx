@@ -37,7 +37,9 @@ const CreateServerModal = ({ isOpen, onClose }: CreateServerModalProps) => {
           onClose();
         },
         // Error is handled by the UI 
-        onError: (err) => console.error(err),
+        onError: (err: any) => {
+          onClose();
+        },
       },
     );
   };

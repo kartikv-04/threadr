@@ -18,7 +18,8 @@ import {
 import { useGetRooms, useDeleteRoom, useCreateRoom } from "../hook";
 import { useServerStore } from "@/feature/server/ServerStore";
 import { useRoomStore } from "@/store/RoomStore";
-import { joinRoom } from "@/lib/socket";
+import { joinRoom, joinServer, leaveServer as leaveSocketServer, onRoomUpdate } from "@/lib/socket";
+import { useQueryClient } from "@tanstack/react-query";
 import { CreateRoomModal } from "./CreateRoomModal";
 import { InviteModal } from "./InviteModal";
 import { UserPanel } from "@/components/UserPanel";
@@ -162,10 +163,37 @@ export const RoomSidebar = () => {
 
   const rooms = useMemo(() => data?.rooms || [], [data?.rooms]);
 
+  const queryClient = useQueryClient();
+
+  // Socket: Join Room
   useEffect(() => {
     if (!activeRoomId) return;
     joinRoom(activeRoomId);
   }, [activeRoomId]);
+
+  // Socket: Join Server Room & Listen for Updates
+  useEffect(() => {
+    if (!activeServerId) return;
+
+    joinServer(activeServerId);
+
+    const cleanup = onRoomUpdate((data) => {
+      // If server was deleted, and it's our active server, redirect home
+      if (data.serverId === activeServerId && !data.roomId) {
+        setActiveServerId(null);
+        queryClient.invalidateQueries({ queryKey: ["servers"] });
+        return;
+      }
+
+      // Otherwise, just refresh the room list
+      queryClient.invalidateQueries({ queryKey: ["rooms", activeServerId] });
+    });
+
+    return () => {
+      leaveSocketServer(activeServerId);
+      cleanup();
+    };
+  }, [activeServerId, queryClient, setActiveServerId]);
 
   const handleRoomSelect = useCallback(
     (roomId: string, roomName: string) => {

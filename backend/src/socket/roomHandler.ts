@@ -3,7 +3,7 @@ import type { Server } from "socket.io"
 import logger from "../config/logger.js";
 import type { Socket } from "socket.io";
 
-export const roomHandler = (io : Server, socket : Socket) => {
+export const roomHandler = (_io: Server, socket: Socket) => {
 
     socket.on("join:room", (roomId: string) => {
         socket.join(roomId);
@@ -15,5 +15,15 @@ export const roomHandler = (io : Server, socket : Socket) => {
         socket.leave(roomId);
         logger.debug(`Socket ${socket.id} left room: ${roomId}`);
 
+    })
+
+    socket.on("join:server", (serverId: string) => {
+        socket.join(`server:${serverId}`);
+        logger.debug(`Socket ${socket.id} joined server room: server:${serverId}`);
+    })
+
+    socket.on("leave:server", (serverId: string) => {
+        socket.leave(`server:${serverId}`);
+        logger.debug(`Socket ${socket.id} left server room: server:${serverId}`);
     })
 }

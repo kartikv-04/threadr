@@ -79,6 +79,12 @@ export const deleteServer = asyncHandler(async (req: Request, res: Response) => 
     // Delete Server
     await deleteServers(validatedData.data as any);
 
+    // Emit event to server room
+    const io = req.app.get("io");
+    if (io) {
+        io.to(`server:${serverId}`).emit("server:deleted", { serverId });
+    }
+
     //  Return result
     return res.status(204).send();
 });

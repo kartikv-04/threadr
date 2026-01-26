@@ -42,3 +42,23 @@ export function joinRoom(roomId: string) {
 export function leaveRoom(roomId: string) {
     socket.emit("leave:room", roomId);
 }
+
+export function joinServer(serverId: string) {
+    socket.emit("join:server", serverId);
+}
+
+export function leaveServer(serverId: string) {
+    socket.emit("leave:server", serverId);
+}
+
+export function onRoomUpdate(callback: (data: any) => void) {
+    socket.on("room:created", callback);
+    socket.on("room:deleted", callback);
+    socket.on("server:deleted", callback);
+
+    return () => {
+        socket.off("room:created", callback);
+        socket.off("room:deleted", callback);
+        socket.off("server:deleted", callback);
+    };
+}

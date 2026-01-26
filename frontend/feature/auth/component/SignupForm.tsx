@@ -153,20 +153,18 @@ export default function SignupForm() {
               </Label>
             </div>
 
-            {/* Error Handling Block */}
-            {validationError && (
-              <p className="text-sm text-red-400 mt-2">{validationError}</p>
-            )}
-
-            {isError && (
-              <p className="text-sm text-red-400 mt-2">
-                {(error as any)?.response?.data?.message || "Something went wrong! Please try again"}
-              </p>
-            )}
+            {/* Error handling */}
+            <div className="-mt-2 mb-1 min-h-[20px]">
+              {(validationError || isError) && (
+                <p className="text-sm text-red-500 font-medium text-center">
+                  {validationError || (error as any)?.response?.data?.message || "Something went wrong! Please try again"}
+                </p>
+              )}
+            </div>
 
             <Button
               type="submit"
-              className="mt-2 w-full bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-600/20"
+              className="w-full bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-600/20"
               disabled={isPending}
             >
               {isPending ? "Creating Account..." : "Create Account →"}

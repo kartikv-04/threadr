@@ -168,7 +168,7 @@ export const logout = asyncHandler(async (req: Request, res: Response) => {
 // Get User by ID Controller
 export const getUser = asyncHandler(async (req: Request, res: Response) => {
     const { userId } = req.params;
-    const user = await getUserById(userId);
+    const user = await getUserById(userId as any );
     return res.status(200).json({
         success: true,
         message: "User found",

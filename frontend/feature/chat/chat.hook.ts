@@ -11,18 +11,18 @@ export const useChatScroll = (serverId: string | null, roomId: string | null) =>
     return useInfiniteQuery({
         queryKey: ['messages', serverId, roomId],
         initialPageParam: 1, // Explicitly set start page
-        
-        queryFn: ({ pageParam = 1 }) => getMessages({ 
-            serverId: serverId!, 
-            roomId: roomId!, 
-            page: pageParam as number, 
-            limit: 50 
+
+        queryFn: ({ pageParam = 1 }) => getMessages({
+            serverId: serverId!,
+            roomId: roomId!,
+            page: pageParam as number,
+            limit: 50
         }),
-        
+
         getNextPageParam: (lastPage, allPages) => {
-             return lastPage.messages.length === 50 ? allPages.length + 1 : undefined;
+            return lastPage.messages.length === 50 ? allPages.length + 1 : undefined;
         },
-        
+
         enabled: !!token && !!serverId && !!roomId,
         staleTime: Infinity, // History never changes, so cache it forever
     });
@@ -36,7 +36,7 @@ export const useSendMessage = () => {
         mutationFn: (data: SendMessageRequest) => sendMessage(data),
 
         onError: (error) => {
-        console.error("Failed to send message:", error);
+            // console.error("Failed to send message:", error);
         }
     });
 };
