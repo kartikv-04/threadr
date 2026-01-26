@@ -22,7 +22,7 @@ import { joinRoom } from "@/lib/socket";
 import { CreateRoomModal } from "./CreateRoomModal";
 import { InviteModal } from "./InviteModal";
 import { UserPanel } from "@/components/UserPanel";
-import { useDeleteServer } from "@/feature/server/server.hook";
+import { useDeleteServer, useLeaveServer } from "@/feature/server/server.hook";
 import { ConfirmModal } from "@/components/ConfirmModal";
 import {
   DropdownMenu,
@@ -42,11 +42,12 @@ interface Room {
 interface RoomItemProps {
   room: Room;
   isActive?: boolean;
+  isAdmin?: boolean;
   onClick?: () => void;
   onDelete?: (roomId: string) => void;
 }
 
-const RoomItem = ({ room, isActive, onClick, onDelete }: RoomItemProps) => {
+const RoomItem = ({ room, isActive, isAdmin, onClick, onDelete }: RoomItemProps) => {
   return (
     <div className="group relative mx-2">
       <button
@@ -70,41 +71,43 @@ const RoomItem = ({ room, isActive, onClick, onDelete }: RoomItemProps) => {
         <span className="truncate font-medium">{room.roomName}</span>
 
         {/* Action icons on hover */}
-        <div className="ml-auto flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-              <div className="p-1 rounded hover:bg-neutral-600/50 cursor-pointer">
-                <Settings
-                  size={14}
-                  className="text-neutral-400 hover:text-neutral-200"
-                />
-              </div>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              side="right"
-              align="start"
-              className="w-48 bg-neutral-950 border-neutral-800 text-neutral-200"
-            >
-              <DropdownMenuItem
-                className="cursor-pointer text-red-500 focus:bg-red-800 focus:text-white"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete?.(room.roomId);
-                }}
+        {isAdmin && (
+          <div className="ml-auto flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                <div className="p-1 rounded hover:bg-neutral-600/50 cursor-pointer">
+                  <Settings
+                    size={14}
+                    className="text-neutral-400 hover:text-neutral-200"
+                  />
+                </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                side="right"
+                align="start"
+                className="w-48 bg-neutral-950 border-neutral-800 text-neutral-200"
               >
-                <Trash className="mr-2 h-4 w-4" />
-                <span>Delete Room</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+                <DropdownMenuItem
+                  className="cursor-pointer text-red-500 focus:bg-red-800 focus:text-white"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete?.(room.roomId);
+                  }}
+                >
+                  <Trash className="mr-2 h-4 w-4" />
+                  <span>Delete Room</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )}
       </button>
     </div>
   );
 };
 
 // Rooms Section Header
-const RoomsSection = ({ onAddClick }: { onAddClick: () => void }) => {
+const RoomsSection = ({ onAddClick, isAdmin }: { onAddClick: () => void, isAdmin?: boolean }) => {
   const [isOpen, setIsOpen] = useState(true);
 
   return (
@@ -122,24 +125,29 @@ const RoomsSection = ({ onAddClick }: { onAddClick: () => void }) => {
         />
         Rooms
       </button>
-      <button
-        onClick={onAddClick}
-        className="p-0.5 rounded text-neutral-400 hover:text-neutral-200 hover:bg-neutral-700/50 transition-all"
-        title="Create Room"
-      >
-        <Plus size={16} />
-      </button>
+      {isAdmin && (
+        <button
+          onClick={onAddClick}
+          className="p-0.5 rounded text-neutral-400 hover:text-neutral-200 hover:bg-neutral-700/50 transition-all"
+          title="Create Room"
+        >
+          <Plus size={16} />
+        </button>
+      )}
     </div>
   );
 };
 
 export const RoomSidebar = () => {
-  const { activeServerId, activeServerName, setActiveServerId } = useServerStore();
+  const { activeServerId, activeServerName, activeRole, setActiveServerId } = useServerStore();
   const { activeRoomId, setActiveRoomId } = useRoomStore();
   const { data, isPending, error } = useGetRooms(activeServerId);
 
   const { mutate: deleteServer } = useDeleteServer();
+  const { mutate: leaveServer } = useLeaveServer();
   const { mutate: deleteRoom } = useDeleteRoom();
+
+  const isAdmin = activeRole?.includes("admin");
 
   // State for Modals & Menu
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -148,6 +156,7 @@ export const RoomSidebar = () => {
 
   // Deletion Modal States
   const [isDeleteServerModalOpen, setIsDeleteServerModalOpen] = useState(false);
+  const [isLeaveServerModalOpen, setIsLeaveServerModalOpen] = useState(false);
   const [isDeleteRoomModalOpen, setIsDeleteRoomModalOpen] = useState(false);
   const [roomToDelete, setRoomToDelete] = useState<{ id: string, name: string } | null>(null);
 
@@ -170,12 +179,38 @@ export const RoomSidebar = () => {
     setIsMenuOpen(false);
   };
 
+  const handleLeaveServer = () => {
+    setIsLeaveServerModalOpen(true);
+    setIsMenuOpen(false);
+  };
+
   const confirmDeleteServer = () => {
     if (activeServerId) {
       deleteServer(activeServerId, {
         onSuccess: () => {
           setActiveServerId(null);
           setIsDeleteServerModalOpen(false);
+        },
+        onError: (error: any) => {
+          setIsDeleteServerModalOpen(false);
+          const message = error?.response?.data?.message || "Only the server admin can delete this server.";
+          alert(message);
+        }
+      });
+    }
+  };
+
+  const confirmLeaveServer = () => {
+    if (activeServerId) {
+      leaveServer(activeServerId, {
+        onSuccess: () => {
+          setActiveServerId(null);
+          setIsLeaveServerModalOpen(false);
+        },
+        onError: (error: any) => {
+          setIsLeaveServerModalOpen(false);
+          const message = error?.response?.data?.message || "Failed to leave the server.";
+          alert(message);
         }
       });
     }
@@ -198,6 +233,12 @@ export const RoomSidebar = () => {
           }
           setIsDeleteRoomModalOpen(false);
           setRoomToDelete(null);
+        },
+        onError: (error: any) => {
+          setIsDeleteRoomModalOpen(false);
+          setRoomToDelete(null);
+          const message = error?.response?.data?.message || "Only the server admin can delete rooms.";
+          alert(message);
         }
       });
     }
@@ -254,36 +295,53 @@ export const RoomSidebar = () => {
                 {/* Divider */}
                 <div className="h-[1px] bg-neutral-800 my-1 mx-1" />
 
-                {/* 2. Standard Settings */}
-                <button className="w-full flex items-center justify-between px-2 py-2 text-neutral-400 hover:bg-neutral-800 hover:text-neutral-200 rounded-sm transition-colors cursor-pointer">
-                  <span className="font-medium text-sm">
-                    Server Settings
-                  </span>
-                  <Settings size={16} />
-                </button>
+                {/* 2. Admin Settings */}
+                {isAdmin && (
+                  <>
+                    <button className="w-full flex items-center justify-between px-2 py-2 text-neutral-400 hover:bg-neutral-800 hover:text-neutral-200 rounded-sm transition-colors cursor-pointer">
+                      <span className="font-medium text-sm">
+                        Server Settings
+                      </span>
+                      <Settings size={16} />
+                    </button>
 
-                <button
-                  onClick={() => {
-                    setIsCreateModalOpen(true);
-                    setIsMenuOpen(false);
-                  }}
-                  className="w-full flex items-center justify-between px-2 py-2 text-neutral-400 hover:bg-neutral-800 hover:text-neutral-200 rounded-sm transition-colors cursor-pointer"
-                >
-                  <span className="font-medium text-sm">Create Room</span>
-                  <Plus size={16} />
-                </button>
+                    <button
+                      onClick={() => {
+                        setIsCreateModalOpen(true);
+                        setIsMenuOpen(false);
+                      }}
+                      className="w-full flex items-center justify-between px-2 py-2 text-neutral-400 hover:bg-neutral-800 hover:text-neutral-200 rounded-sm transition-colors cursor-pointer"
+                    >
+                      <span className="font-medium text-sm">Create Room</span>
+                      <Plus size={16} />
+                    </button>
 
-                {/* Divider */}
-                <div className="h-[1px] bg-neutral-800 my-1 mx-1" />
+                    {/* Divider */}
+                    <div className="h-[1px] bg-neutral-800 my-1 mx-1" />
+                  </>
+                )}
 
-                {/* 3. Danger Zone */}
-                <button
-                  onClick={handleDeleteServer}
-                  className="w-full flex items-center justify-between px-2 py-2 text-red-600 hover:bg-red-900 hover:text-white rounded-sm transition-colors cursor-pointer"
-                >
-                  <span className="font-medium text-sm">Delete Server</span>
-                  <Trash size={16} />
-                </button>
+                {/* 3. Leave Server */}
+                {!isAdmin && (
+                  <button
+                    onClick={handleLeaveServer}
+                    className="w-full flex items-center justify-between px-2 py-2 text-red-600 hover:bg-red-900 hover:text-white rounded-sm transition-colors cursor-pointer"
+                  >
+                    <span className="font-medium text-sm">Leave Server</span>
+                    <LogOut size={16} />
+                  </button>
+                )}
+
+                {/* 4. Delete Server (Admin Only) */}
+                {isAdmin && (
+                  <button
+                    onClick={handleDeleteServer}
+                    className="w-full flex items-center justify-between px-2 py-2 text-red-600 hover:bg-red-900 hover:text-white rounded-sm transition-colors cursor-pointer"
+                  >
+                    <span className="font-medium text-sm">Delete Server</span>
+                    <Trash size={16} />
+                  </button>
+                )}
               </div>
             </>
           )}
@@ -291,7 +349,7 @@ export const RoomSidebar = () => {
 
         {/* Rooms List */}
         <div className="flex-1 overflow-y-auto py-3 scrollbar-hide">
-          <RoomsSection onAddClick={() => setIsCreateModalOpen(true)} />
+          <RoomsSection onAddClick={() => setIsCreateModalOpen(true)} isAdmin={isAdmin} />
 
           {isPending ? (
             <div className="flex items-center justify-center py-6">
@@ -311,6 +369,7 @@ export const RoomSidebar = () => {
                 <RoomItem
                   key={room.roomId}
                   room={room}
+                  isAdmin={isAdmin}
                   isActive={activeRoomId === room.roomId}
                   onClick={() => handleRoomSelect(room.roomId, room.roomName)}
                   onDelete={handleDeleteRoom}
@@ -351,6 +410,20 @@ export const RoomSidebar = () => {
               <>
                 This will permanently delete <span className="font-semibold text-neutral-200">“{activeServerName || "this server"}”</span> and all of its data.<br />
                 <span className="text-red-400 font-medium">This action cannot be undone.</span>
+              </>
+            }
+          />
+          <ConfirmModal
+            isOpen={isLeaveServerModalOpen}
+            onClose={() => setIsLeaveServerModalOpen(false)}
+            onConfirm={confirmLeaveServer}
+            title="Leave server"
+            confirmText="Leave"
+            isPending={false}
+            description={
+              <>
+                Are you sure you want to leave <span className="font-semibold text-neutral-200">“{activeServerName || "this server"}”</span>?<br />
+                You will need a new invite to join back.
               </>
             }
           />

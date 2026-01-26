@@ -4,7 +4,7 @@ import "./globals.css";
 import { QueryProvider } from "@/lib/provider";
 import { SocketProvider } from "@/lib/SocketProvider";
 
-const dmSans = DM_Sans({subsets:['latin'],variable:'--font-sans'});
+const dmSans = DM_Sans({ subsets: ['latin'], variable: '--font-sans' });
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

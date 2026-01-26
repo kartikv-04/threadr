@@ -1,7 +1,7 @@
 import logger from "../config/logger.js"
 import { roomModel } from "../models/room.model.js"
 import type { NewRoomRequest, NewRoomResponse, GetRoomRequest, GetRoomResponse, DeleteRoomRequest } from "../types/types.js"
-import { NotFoundError, UnauthorizedError, ValidationError } from "../helper/errorClass.js";
+import { NotFoundError, ForbiddenError, ValidationError } from "../helper/errorClass.js";
 import { memberModel } from "../models/member.model.js";
 
 
@@ -17,8 +17,8 @@ export const createRoom = async (data: NewRoomRequest): Promise<NewRoomResponse>
     // Logic to allow only admin of server to create new channel/room
     const serverAdmin = await memberModel.findOne({user : data.userId, server : data.serverId})
 
-    if (!serverAdmin) {
-        throw new UnauthorizedError("Only admin can create Room within Server!")
+    if (!serverAdmin || !serverAdmin.role.includes("admin")) {
+        throw new ForbiddenError("Only server admin can create Room within Server!")
     }
 
     // Create new Room for Server
@@ -61,7 +61,7 @@ export const getRooms = async (data: GetRoomRequest): Promise<GetRoomResponse> =
     // if user is admin return all rooms if not return only public rooms
     isMember.role.includes("admin") ? findRooms = findRoomsForAdmin : findRooms = findRoomsForUser;
 
-    const roomList = findRooms.map(room => { 
+    const roomList = findRooms.map(room => {
         const rooms = room as any as {server : string, _id : string, roomName : string};
         return {
             serverId : rooms.server,
@@ -88,13 +88,13 @@ export const deleteRoom = async (data: DeleteRoomRequest): Promise<void> => {
 
     // Check if Member is admin?
     if (!findMember.role.includes("admin")) {  // check role 
-        throw new UnauthorizedError("Not Authorized to delete Server");
+        throw new ForbiddenError("Only server admin can delete rooms.");
     };
 
     // Delete the room
-    const deleteResult = await roomModel.deleteOne({ 
-        _id: data.roomId, 
-        server: data.serverId 
+    const deleteResult = await roomModel.deleteOne({
+        _id: data.roomId,
+        server: data.serverId
     });
 
     // Check if a room was actually deleted

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getServer, createServer, deleteServer } from "./server.api";
+import { getServer, createServer, deleteServer, leaveServer } from "./server.api";
 import { useAuthStore } from "@/feature/auth/AuthStore";
 import { CreateServerRequest } from "./server.type";
 
@@ -30,6 +30,17 @@ export const useDeleteServer = () => {
 
     return useMutation({
         mutationFn: (serverId: string) => deleteServer(serverId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['servers'] });
+        }
+    });
+}
+
+export const useLeaveServer = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (serverId: string) => leaveServer(serverId),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['servers'] });
         }

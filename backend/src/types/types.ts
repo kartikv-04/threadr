@@ -86,14 +86,18 @@ export type GetServerRequest = {
 }
 
 export type GetServerResponse = {
-    servers: {
-        serverId: string;
-        name: string;
-        icon?: string;
-    }[];
-}
+    serverId: string;
+    name: string;
+    icon?: string;
+    role: string[];
+}[];
 
 export type DeleteServerReqest = {
+    userId: string,
+    serverId: string
+}
+
+export type LeaveServerRequest = {
     userId: string,
     serverId: string
 }

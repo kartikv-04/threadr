@@ -35,3 +35,7 @@ export const createServer = async (payload: CreateServerRequest): Promise<NewSer
 export const deleteServer = async (serverId: string): Promise<void> => {
     await api.delete(`/servers/${serverId}`);
 }
+
+export const leaveServer = async (serverId: string): Promise<void> => {
+    await api.post(`/servers/${serverId}/leave`);
+}

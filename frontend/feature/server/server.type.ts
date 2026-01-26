@@ -7,6 +7,7 @@ export type GetServerResponse = {
         serverId: string;
         name: string;
         icon?: string;
+        role: string[];
     }[];
 }
 

@@ -13,6 +13,7 @@ interface Server {
   serverId: string;
   name: string;
   icon?: string;
+  role: string[];
 }
 
 export const ServerSidebar = () => {
@@ -63,7 +64,7 @@ export const ServerSidebar = () => {
                   imageUrl: server.icon,
                 }}
                 isActive={activeServerId === server.serverId}
-                onClick={() => setActiveServerId(server.serverId, server.name)}
+                onClick={() => setActiveServerId(server.serverId, server.name, server.role)}
               />
             ))
           )}

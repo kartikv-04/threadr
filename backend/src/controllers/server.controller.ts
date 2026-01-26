@@ -1,8 +1,8 @@
 import type { Request, Response } from "express";
-import { createServer, getServerList, deleteServers } from "../services/server.service.js";
+import { createServer, getServerList, deleteServers, leaveServer } from "../services/server.service.js";
 import logger from "../config/logger.js";
 import { asyncHandler } from "../helper/asyncHandler.js";
-import { NewServer, GetServerListSchema, DeleteServerSchema } from "../validator/zod.js";
+import { NewServer, GetServerListSchema, DeleteServerSchema, LeaveServerSchema } from "../validator/zod.js";
 import { ValidationError } from "../helper/errorClass.js";
 
 // Controller function for New Server
@@ -82,4 +82,31 @@ export const deleteServer = asyncHandler(async (req: Request, res: Response) => 
     //  Return result
     return res.status(204).send();
 });
+
+// Controller function For leaving Server
+export const leaveServerController = asyncHandler(async (req: Request, res: Response) => {
+    // Get user id
+    const userId = (req as any)?.user.id.toString();
+
+    //  Destructure the req body
+    const { serverId } = req.params;
+
+    //  Validate using Zod
+    const validatedData = LeaveServerSchema.safeParse({ userId, serverId });
+
+    // Handle Error
+    if (!validatedData.success) {
+        throw new ValidationError("Validation Failed!")
+    }
+
+    // Leave Server
+    await leaveServer(validatedData.data as any);
+
+    //  Return success
+    return res.status(200).json({
+        success: true,
+        message: "Left server successfully"
+    });
+});
+
 

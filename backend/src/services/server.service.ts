@@ -1,7 +1,7 @@
-import type { CreateServerRequest, NewServerResponse, GetServerRequest, GetServerResponse, DeleteServerReqest } from "../types/types.js";
+import type { CreateServerRequest, NewServerResponse, GetServerRequest, GetServerResponse, DeleteServerReqest, LeaveServerRequest } from "../types/types.js";
 import { serverModel } from "../models/server.model.js"
 import logger from "../config/logger.js"
-import { NotFoundError, UnauthorizedError, ValidationError } from "../helper/errorClass.js";
+import { NotFoundError, ForbiddenError, ValidationError } from "../helper/errorClass.js";
 import { memberModel } from "../models/member.model.js";
 import { roomModel } from "../models/room.model.js";
 import { createRoom } from "./room.service.js";
@@ -86,7 +86,8 @@ export const getServerList = async (data: GetServerRequest): Promise<GetServerRe
         return {
             serverId: server._id.toString(),
             name: server.name,
-            icon: server.icon
+            icon: server.icon,
+            role: list.role
         };
 
     })
@@ -108,7 +109,7 @@ export const deleteServers = async (data: DeleteServerReqest): Promise<void> => 
 
     // Check if Member is admin?
     if (!findMember.role.includes("admin")) {  // check role 
-        throw new UnauthorizedError("You are not authorized to delete this server.");
+        throw new ForbiddenError("Only server admin can delete this server.");
     };
 
     // Delete the server and all room and messages belonging to these server
@@ -119,4 +120,34 @@ export const deleteServers = async (data: DeleteServerReqest): Promise<void> => 
 
     ])
 
+}
+
+export const leaveServer = async (data: LeaveServerRequest): Promise<void> => {
+    // Validate
+    if (!data.userId || !data.serverId) {
+        throw new ValidationError("Required fields are missing.");
+    }
+
+    // Check if user is member
+    const findMember = await memberModel.findOne({ user: data.userId, server: data.serverId });
+    if (!findMember) {
+        throw new NotFoundError("Member Not Found");
+    }
+
+    // If user is admin, check if they are the last admin
+    if (findMember.role.includes("admin")) {
+        const adminCount = await memberModel.countDocuments({
+            server: data.serverId,
+            role: "admin"
+        });
+
+        if (adminCount <= 1) {
+            throw new ValidationError("As the last admin, you cannot leave. Delete the server instead or transfer ownership.");
+        }
+    }
+
+    // Leave server (remove from member model)
+    await memberModel.deleteOne({ _id: findMember._id });
+
+    logger.info(`User ${data.userId} left server ${data.serverId}`);
 }
