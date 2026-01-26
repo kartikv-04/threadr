@@ -14,7 +14,7 @@ import { errorHandler } from './middleware/errorMiddleware.js';
 import { roomHandler } from './socket/roomHandler.js';
 import { messageHandler } from './socket/messageHandler.js';
 import { CLIENT_URL } from './config/env.js';
-import type { Request, Response } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 
 const PORT = process.env.PORT || 5001;
 
@@ -30,7 +30,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Test route - add to see error middleware
-app.get('/test-error', (_req : Request, _res : Response, next) => {
+app.get('/test-error', (_req: Request, _res: Response, next: NextFunction) => {
     next(new ValidationError("Test error"));
 });
 
