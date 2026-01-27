@@ -2,7 +2,7 @@
 
 import { Mic, Headphones, Cog, LogOut, User, Settings } from "lucide-react";
 import { useAuthStore } from "@/feature/auth/AuthStore";
-import { useUser } from "@/feature/auth/user.hook";
+import { useUser } from "@/feature/auth/auth.hook";
 import { useLogout } from "@/feature/auth/auth.hook";
 import {
     DropdownMenu,

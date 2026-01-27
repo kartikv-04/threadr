@@ -1,6 +1,6 @@
 "use client";
 
-import { JoinServerModal } from "@/feature/invite/component/JoinServerModal";
+import { JoinServerModal } from "@/feature/invite/components/JoinServerModal";
 import { useParams } from "next/navigation";
 
 export default function InvitePage() {

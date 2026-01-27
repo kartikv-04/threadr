@@ -11,7 +11,10 @@ export const getSignup = async (data: SignupPayload): Promise<SignupResponse> =>
     return res.data;
 }
 
-
+export const getUser = async (userId: string) => {
+    const res = await api.get(`/users/${userId}`);
+    return res.data.data;
+};
 
 export const getSignin = async (data: SignInPayload): Promise<SignInResponse> => {
 

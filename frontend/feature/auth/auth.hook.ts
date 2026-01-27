@@ -1,11 +1,12 @@
 "use client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { SignInPayload, SignInResponse, SignupPayload, SignupResponse } from "./auth.type";
 import { getSignup, getSignin, logout } from "./auth.api";
 import { useAuthStore } from "./AuthStore";
 import { useRouter } from "next/navigation";
 import { useServerStore } from "../server/ServerStore";
 import { useRoomStore } from "@/feature/room/RoomStore";
+import { getUser } from "./auth.api";
 
 // Hook to Post Signin User
 export const useSignIn = () => {
@@ -53,5 +54,13 @@ export const useLogout = () => {
             queryClient.clear();
             router.push("/login");
         },
+    });
+};
+
+export const useUser = (userId: string | null) => {
+    return useQuery({
+        queryKey: ["user", userId],
+        queryFn: () => getUser(userId!),
+        enabled: !!userId,
     });
 };
