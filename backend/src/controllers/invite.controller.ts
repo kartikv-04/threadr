@@ -1,7 +1,7 @@
 
 import type { Request, Response, NextFunction } from "express";
 import { generateInvite, validateInvite, joinInvite } from "../services/invite.service.js";
-import type { GenerateInviteRequest, JoinInviteReqest } from "../types/types.js";
+import type { GenerateInviteRequest, JoinInviteReqest } from "../types/socket.js";
 import { asyncHandler } from "../helper/asyncHandler.js";
 
 // Generate Invite Link

@@ -4,7 +4,7 @@ import type {
     GenerateInviteResponse,
     InviteValidResponse,
     JoinInviteReqest
-} from "../types/types.js";
+} from "../types/invite.js";
 import logger from "../config/logger.js";
 import { NotFoundError, UnauthorizedError, ValidationError } from "../helper/errorClass.js";
 import { memberModel } from "../models/member.model.js";

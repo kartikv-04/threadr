@@ -1,7 +1,7 @@
 import { userModel } from '../models/user.model.js';
 import { generateToken, hashPassword, newPersonalServer } from '../helper/utility.js';
 import logger from '../config/logger.js';
-import type { SignupRequest, SigninResponse, SignupResponse, SigninRequest, } from '../types/types.js';
+import type { SignupRequest, SigninResponse, SignupResponse, SigninRequest, } from '../types/auth.js';
 import bcrypt from 'bcryptjs';
 import { ConflictError, UnauthorizedError } from '../helper/errorClass.js';
 

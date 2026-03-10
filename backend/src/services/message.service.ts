@@ -1,7 +1,7 @@
 import logger from "../config/logger.js"
 import { serverModel } from "../models/server.model.js"
 import { messageModel } from "../models/message.model.js"
-import type { GetMessagesRequest, MessageResponse, SendMessageRequest } from "../types/types.js"
+import type { GetMessagesRequest, MessageResponse, SendMessageRequest } from "../types/message.js"
 import { roomModel } from "../models/room.model.js"
 import { memberModel } from "../models/member.model.js"
 import { NotFoundError, UnauthorizedError, ValidationError } from "../helper/errorClass.js";
