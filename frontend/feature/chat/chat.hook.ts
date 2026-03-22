@@ -1,8 +1,15 @@
-import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getMessages, sendMessage } from "./chat.api";
+import { InfiniteData, useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { editMessage as editMessageApi, getMessages, sendMessage } from "./chat.api";
 import { useAuthStore } from "@/feature/auth/AuthStore";
-import { SendMessageRequest } from "./chat.type";
-import { socket } from "@/lib/socket"; // Import the socket instance directly
+import { EditMessageRequest, GetMessagesResponse, Message, SendMessageRequest } from "./chat.type";
+import { useMessageStore } from "./MessageStore";
+
+const updateMessageInList = (messages: Message[], updatedMessage: Message) =>
+    messages.map((message) =>
+        message.messageId === updatedMessage.messageId
+            ? { ...message, ...updatedMessage }
+            : message
+    );
 
 // 1. Get Messages (Upgraded to Infinite Scroll)
 export const useChatScroll = (serverId: string | null, roomId: string | null) => {
@@ -30,13 +37,49 @@ export const useChatScroll = (serverId: string | null, roomId: string | null) =>
 
 // 2. Send Message (Upgraded to Optimistic Updates)
 export const useSendMessage = () => {
-    const queryClient = useQueryClient();
-
     return useMutation({
         mutationFn: (data: SendMessageRequest) => sendMessage(data),
 
-        onError: (error) => {
-            // console.error("Failed to send message:", error);
+        onError: () => {
+        }
+    });
+};
+
+// 3. Edit Messages
+export const useEditMessage = (serverId: string, roomId: string) => {
+    const queryClient = useQueryClient();
+    const updateMessage = useMessageStore((state) => state.updateMessage);
+
+    return useMutation({
+        mutationFn: (data: EditMessageRequest) => editMessageApi(data),
+
+        onSuccess: (updatedMessage) => {
+            const normalizedMessage: Message = {
+                ...updatedMessage,
+                username: updatedMessage.username ?? "",
+                roomId: updatedMessage.roomId ?? roomId,
+                serverId: updatedMessage.serverId ?? serverId,
+            };
+
+            queryClient.setQueryData<InfiniteData<GetMessagesResponse>>(
+                ["messages", serverId, roomId],
+                (existing) => {
+                    if (!existing) return existing;
+
+                    return {
+                        ...existing,
+                        pages: existing.pages.map((page) => ({
+                            ...page,
+                            messages: updateMessageInList(page.messages, normalizedMessage),
+                        })),
+                    };
+                }
+            );
+
+            updateMessage(normalizedMessage);
+        },
+
+        onError: () => {
         }
     });
 };

@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
-import { useChatScroll, useSendMessage } from "../chat.hook";
+import { useEffect, useMemo, useState } from "react";
+import { useChatScroll, useEditMessage, useSendMessage } from "../chat.hook";
 import { useChatSocket } from "../useChatSocket";
 import ChatHeader from "./ChatHeader";
 import MessageList from "./MessageList";
@@ -10,6 +10,7 @@ import { useMessageStore } from "@/feature/chat/MessageStore";
 
 import { useAuthStore } from "@/feature/auth/AuthStore";
 import { useUser } from "@/feature/auth/user.hook";
+import type { Message } from "../chat.type";
 
 interface ChatAreaProps {
   serverId: string;
@@ -42,6 +43,8 @@ export const ChatArea = ({
 
   // 4. Send Message Hook
   const { mutate: sendMessage, isPending: isSending } = useSendMessage();
+  const { mutate: updateMessage, isPending: isEditing } = useEditMessage(serverId, roomId);
+  const [editingMessage, setEditingMessage] = useState<Message | null>(null);
 
   // Clear live buffer when switching rooms
   useEffect(() => {
@@ -60,7 +63,29 @@ export const ChatArea = ({
   }, [data, liveMessages]);
 
   const handleSendMessage = (content: string) => {
+    if (editingMessage) {
+      updateMessage(
+        {
+          roomId,
+          messageId: editingMessage.messageId,
+          content,
+        },
+        {
+          onSuccess: () => setEditingMessage(null),
+        }
+      );
+      return;
+    }
+
     sendMessage({ serverId, roomId, content });
+  };
+
+  const handleEditMessage = (message: Message) => {
+    setEditingMessage(message);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingMessage(null);
   };
 
   if (status === "error") {
@@ -83,14 +108,17 @@ export const ChatArea = ({
         loadMore={fetchNextPage}
         hasMore={hasNextPage}
         isLoadingMore={isFetchingNextPage}
+        onEditMessage={handleEditMessage}
       />
 
-      <div className="mt-auto border-t border-neutral-800/60 h-[68px] flex items-center">
+      <div className="mt-auto shrink-0 border-t border-neutral-800/60 bg-neutral-950">
         <div className="w-full">
           <MessageInput
             onSend={handleSendMessage}
-            disabled={isSending}
+            disabled={isSending || isEditing}
             roomName={roomName}
+            editingMessage={editingMessage}
+            onCancelEdit={handleCancelEdit}
           />
         </div>
       </div>

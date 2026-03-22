@@ -30,7 +30,7 @@ export const validate = (schema: ZodTypeAny) => {
         }
 
         if (validated.query !== undefined) {
-            req.query = validated.query;
+            Object.assign(req.query, validated.query);
         }
 
         return next();

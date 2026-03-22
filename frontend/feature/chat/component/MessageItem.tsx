@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { Pin, SmilePlus, SquarePen, Trash2 } from "lucide-react";
 import { Message } from "../chat.type";
 
 interface MessageItemProps {
@@ -8,6 +9,7 @@ interface MessageItemProps {
   isOwn?: boolean;
   showAvatar?: boolean;
   username?: string; // The logged-in user's name
+  onEdit?: (message: Message) => void;
 }
 
 const formatTime = (dateString: string) => {
@@ -44,9 +46,13 @@ const MessageItem = ({
   message,
   isOwn = false,
   showAvatar = true,
+  onEdit,
 }: MessageItemProps) => {
   // Use either the message name or the prop (fallback)
   const displayName = message.username;
+
+  const actionButtonClass =
+    "flex h-7 w-7 items-center justify-center rounded-md text-neutral-400 transition-colors hover:bg-neutral-700 hover:text-white";
 
   return (
     <div
@@ -98,14 +104,40 @@ const MessageItem = ({
 
         <p className="text-[#DBDEE1] text-[15px] leading-relaxed break-words whitespace-pre-wrap">
           {message.content}
+          {message.isEdited && (
+            <span className="ml-2 inline align-middle text-[11px] font-light text-neutral-500">
+              (edited)
+            </span>
+          )}
         </p>
       </div>
 
       {/* Hover Toolbar (Placeholder for Edit/Delete) */}
       <div className="absolute -top-4 right-4 opacity-0 group-hover:opacity-100 transition-all z-10">
         <div className="flex bg-[#2B2D31] border border-[#1E1F22] rounded-[4px] shadow-sm p-1">
-          {/* Add your Edit/Delete icons here later */}
-          <div className="w-6 h-6 hover:bg-neutral-700 rounded cursor-pointer" />
+          <button type="button" title="Add reaction" className={actionButtonClass}>
+            <SmilePlus size={16} />
+          </button>
+          <button type="button" title="Pin message" className={actionButtonClass}>
+            <Pin size={16} />
+          </button>
+          <button
+            type="button"
+            title="Edit message"
+            className={cn(actionButtonClass, !isOwn && "cursor-not-allowed opacity-40 hover:bg-transparent hover:text-neutral-400")}
+            onClick={() => isOwn && onEdit?.(message)}
+            disabled={!isOwn}
+          >
+            <SquarePen size={16} />
+          </button>
+          <button
+            type="button"
+            title="Delete message"
+            className={cn(actionButtonClass, !isOwn && "cursor-not-allowed opacity-40 hover:bg-transparent hover:text-neutral-400")}
+            disabled={!isOwn}
+          >
+            <Trash2 size={16} />
+          </button>
         </div>
       </div>
     </div>
