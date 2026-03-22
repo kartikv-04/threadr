@@ -1,7 +1,7 @@
 import { InfiniteData, useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { editMessage as editMessageApi, getMessages, sendMessage } from "./chat.api";
+import { deleteMessage as deleteMessageApi, editMessage as editMessageApi, getMessages, sendMessage } from "./chat.api";
 import { useAuthStore } from "@/feature/auth/AuthStore";
-import { EditMessageRequest, GetMessagesResponse, Message, SendMessageRequest } from "./chat.type";
+import { DeleteMessageRequest, EditMessageRequest, GetMessagesResponse, Message, SendMessageRequest } from "./chat.type";
 import { useMessageStore } from "./MessageStore";
 
 const updateMessageInList = (messages: Message[], updatedMessage: Message) =>
@@ -10,6 +10,9 @@ const updateMessageInList = (messages: Message[], updatedMessage: Message) =>
             ? { ...message, ...updatedMessage }
             : message
     );
+
+const removeMessageFromList = (messages: Message[], messageId: string) =>
+    messages.filter((message) => message.messageId !== messageId);
 
 // 1. Get Messages (Upgraded to Infinite Scroll)
 export const useChatScroll = (serverId: string | null, roomId: string | null) => {
@@ -77,6 +80,37 @@ export const useEditMessage = (serverId: string, roomId: string) => {
             );
 
             updateMessage(normalizedMessage);
+        },
+
+        onError: () => {
+        }
+    });
+};
+
+export const useDeleteMessage = (serverId: string, roomId: string) => {
+    const queryClient = useQueryClient();
+    const removeMessage = useMessageStore((state) => state.removeMessage);
+
+    return useMutation({
+        mutationFn: (data: DeleteMessageRequest) => deleteMessageApi(data),
+
+        onSuccess: ({ messageId }) => {
+            queryClient.setQueryData<InfiniteData<GetMessagesResponse>>(
+                ["messages", serverId, roomId],
+                (existing) => {
+                    if (!existing) return existing;
+
+                    return {
+                        ...existing,
+                        pages: existing.pages.map((page) => ({
+                            ...page,
+                            messages: removeMessageFromList(page.messages, messageId),
+                        })),
+                    };
+                }
+            );
+
+            removeMessage(messageId);
         },
 
         onError: () => {

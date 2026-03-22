@@ -10,6 +10,7 @@ interface MessageItemProps {
   showAvatar?: boolean;
   username?: string; // The logged-in user's name
   onEdit?: (message: Message) => void;
+  onDelete?: (message: Message) => void;
 }
 
 const formatTime = (dateString: string) => {
@@ -47,6 +48,7 @@ const MessageItem = ({
   isOwn = false,
   showAvatar = true,
   onEdit,
+  onDelete,
 }: MessageItemProps) => {
   // Use either the message name or the prop (fallback)
   const displayName = message.username;
@@ -134,6 +136,7 @@ const MessageItem = ({
             type="button"
             title="Delete message"
             className={cn(actionButtonClass, !isOwn && "cursor-not-allowed opacity-40 hover:bg-transparent hover:text-neutral-400")}
+            onClick={() => isOwn && onDelete?.(message)}
             disabled={!isOwn}
           >
             <Trash2 size={16} />

@@ -6,6 +6,7 @@ type MessageState = {
   setMessages: (messages: Message[]) => void;
   addMessage: (message: Message) => void;
   updateMessage: (message: Message) => void;
+  removeMessage: (messageId: string) => void;
   clearMessages: () => void;
 };
 
@@ -32,5 +33,9 @@ export const useMessageStore = create<MessageState>()((set) => ({
     messages: state.messages.map((msg) =>
       msg.messageId === updatedMsg.messageId ? { ...msg, ...updatedMsg } : msg
     ),
+  })),
+
+  removeMessage: (messageId) => set((state) => ({
+    messages: state.messages.filter((msg) => msg.messageId !== messageId),
   })),
 }));

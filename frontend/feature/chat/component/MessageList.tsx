@@ -14,6 +14,7 @@ interface MessageListProps {
   isLoadingMore: boolean;
   username?: string;
   onEditMessage?: (message: Message) => void;
+  onDeleteMessage?: (message: Message) => void;
 }
 
 const MessageList = ({
@@ -25,6 +26,7 @@ const MessageList = ({
   isLoadingMore,
   username,
   onEditMessage,
+  onDeleteMessage,
 }: MessageListProps) => {
   const bottomRef = useRef<HTMLDivElement>(null);
   const topRef = useRef<HTMLDivElement>(null);
@@ -121,6 +123,7 @@ const MessageList = ({
               showAvatar={showAvatar}
               username={username}
               onEdit={onEditMessage}
+              onDelete={onDeleteMessage}
             />
           );
         })}

@@ -2,15 +2,17 @@
 
 import { X, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { ReactNode } from "react";
 
 interface ConfirmModalProps {
     isOpen: boolean;
     onClose: () => void;
     onConfirm: () => void;
     title: string;
-    description: React.ReactNode;
+    description: ReactNode;
     confirmText?: string;
     isPending?: boolean;
+    icon?: ReactNode;
 }
 
 export const ConfirmModal = ({
@@ -21,6 +23,7 @@ export const ConfirmModal = ({
     description,
     confirmText = "Confirm",
     isPending = false,
+    icon,
 }: ConfirmModalProps) => {
     if (!isOpen) return null;
 
@@ -34,15 +37,12 @@ export const ConfirmModal = ({
 
             {/* Modal */}
             <div className="relative z-10 w-full max-w-md mx-4">
-                {/* Subtle danger glow */}
-                <div className="absolute -top-24 -left-24 h-64 w-64 rounded-full bg-red-600/10 blur-[120px]" />
-
                 <div className="relative overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900/95 backdrop-blur-xl shadow-2xl">
                     {/* Header */}
                     <div className="px-6 pt-8 pb-6 text-center">
                         {/* Icon */}
-                        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-600/10 ring-1 ring-red-600/30">
-                            <AlertTriangle className="text-red-500" size={26} />
+                        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-neutral-800 bg-neutral-800/80 text-neutral-200">
+                            {icon ?? <AlertTriangle size={24} />}
                         </div>
 
                         <h2 className="text-2xl font-semibold text-white">
@@ -71,11 +71,10 @@ export const ConfirmModal = ({
                             onClick={onConfirm}
                             disabled={isPending}
                             className={cn(
-                                "px-6 py-2 text-sm font-semibold rounded-lg transition-all",
-                                "bg-red-700 text-white hover:bg-red-800",
-                                "shadow-lg shadow-red-600/30",
+                                "px-6 py-2 text-sm font-semibold rounded-lg transition-colors",
+                                "bg-red-600 text-white hover:bg-red-500",
                                 "active:scale-[0.97]",
-                                "disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+                                "disabled:opacity-50 disabled:cursor-not-allowed"
                             )}
                         >
                             {isPending ? "Processing…" : confirmText}
