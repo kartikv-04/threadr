@@ -167,6 +167,16 @@ export const ReceiveMessageRequestSchema = z.object({
     })
 });
 
+export const EditMessageRequestSchema = z.object({
+    params: z.object({
+        roomId: objectId
+    }),
+    body: z.object({
+        messageId: objectId,
+        content: z.string().trim().min(1, "Message content is required")
+    })
+});
+
 export const CreateInviteRequestSchema = z.object({
     params: z.object({
         serverId: objectId

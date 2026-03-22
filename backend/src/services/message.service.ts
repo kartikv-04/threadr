@@ -1,7 +1,7 @@
 import logger from "../config/logger.js"
 import { serverModel } from "../models/server.model.js"
 import { messageModel } from "../models/message.model.js"
-import type { GetMessagesRequest, MessageResponse, SendMessageRequest } from "../types/message.js"
+import type { EditMessageRequest, GetMessagesRequest, MessageResponse, SendMessageRequest } from "../types/message.js"
 import { roomModel } from "../models/room.model.js"
 import { memberModel } from "../models/member.model.js"
 import { NotFoundError, UnauthorizedError, ValidationError } from "../helper/errorClass.js";
@@ -55,7 +55,7 @@ export const sendMessageService = async (data: SendMessageRequest): Promise<Mess
     }
 }
 
-export const recieveMessage = async (data: GetMessagesRequest): Promise<MessageResponse> => {
+export const recieveMessageService = async (data: GetMessagesRequest): Promise<MessageResponse> => {
     // 1. Validatoin : Check if Fields Exist
     if (!data.userId || !data.serverId || !data.roomId) {
         logger.warn("Incomplete parameters for message retrieval.");
@@ -109,4 +109,64 @@ export const recieveMessage = async (data: GetMessagesRequest): Promise<MessageR
         roomId: msg.room.toString(),
         serverId: msg.server.toString()
     }))
+}
+
+export const editMessageService = async (data: EditMessageRequest): Promise<MessageResponse> => {
+    // cjeck to see if any field is missing
+    if (!data.userId || !data.roomId || !data.messageId || !data.content) {
+        logger.warn("Missing Required firelds");
+        throw new ValidationError("Required fields are missing. Please provide all details.");
+    }
+
+    const room = await roomModel.findById(data.roomId).select("_id server");
+    if (!room) {
+        logger.warn("Room not found for edit message");
+        throw new NotFoundError("Room Not Found");
+    }
+
+    // Check if user is member and not banned for the room's server
+    const isMember = await memberModel.findOne({
+        server: room.server,
+        user: data.userId,
+        isBanned: false
+    });
+
+    if (!isMember) {
+        logger.warn("Unauthorized edit attempt by non-member or banned member");
+        throw new UnauthorizedError("You are not allowed to edit messages in this room.");
+    }
+
+    // Now check and validate message against room, server, and owner
+    const updateMessage = await messageModel
+        .findOne({
+            _id: data.messageId,
+            room: data.roomId,
+            server: room.server,
+            sentBy: data.userId
+        })
+        .populate<{ sentBy: { _id: { toString(): string }; username: string } }>("sentBy", "username");
+
+    if (!updateMessage) {
+        logger.warn("Requested message to edit was not found or does not belong to user");
+        throw new NotFoundError("Message Not Found");
+    }
+
+    // Update the message
+    updateMessage.isEdited = true;
+    updateMessage.content = data.content;
+    updateMessage.editedAt = new Date();
+
+    // Save updated 
+    await updateMessage.save();
+
+    return {
+        messageId: updateMessage._id.toString(),
+        content: updateMessage.content,
+        userId: updateMessage.sentBy._id.toString(),
+        username: updateMessage.sentBy.username,
+        isEdited: updateMessage.isEdited,
+        createdAt: updateMessage.createdAt,
+        roomId: updateMessage.room.toString(),
+        serverId: room.server.toString()
+    };
 }

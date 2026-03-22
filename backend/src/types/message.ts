@@ -28,3 +28,10 @@ export interface GetMessagesRequest {
     page?: number;  // Optional: Default to 1
     limit?: number; // Optional: Default to 50
 }
+
+export type EditMessageRequest = {
+    userId: string;
+    roomId: string;
+    messageId: string;
+    content: string;
+}

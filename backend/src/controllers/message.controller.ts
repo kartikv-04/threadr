@@ -1,8 +1,8 @@
 import type { Request, Response } from "express";
-import { recieveMessage, sendMessageService } from "../services/message.service.js";
+import { editMessageService, recieveMessageService, sendMessageService } from "../services/message.service.js";
 import logger from "../config/logger.js";
 import { asyncHandler } from "../helper/asyncHandler.js";
-import type { GetMessagesRequest, SendMessageRequest } from "../types/message.js";
+import type { EditMessageRequest, GetMessagesRequest, SendMessageRequest } from "../types/message.js";
 
 // 1. Send Message Controller
 export const sendMessage = asyncHandler(async (req: Request, res: Response) => {
@@ -45,7 +45,7 @@ export const getMessage = asyncHandler(async (req: Request, res: Response) => {
     //  Get parameters from query (RESTful approach for GET requests)
     const userId = (req as any).user.id.toString() as string;
     const { roomId } = req.params as { roomId: string };
-    const { serverId, page = 1, limit = 50 } = req.query as {
+    const { serverId, page = 1, limit = 50 } = req.query as unknown as {
         serverId: string;
         page?: number;
         limit?: number;
@@ -61,7 +61,7 @@ export const getMessage = asyncHandler(async (req: Request, res: Response) => {
     };
 
     //  Receive message
-    const result = await recieveMessage(data);
+    const result = await recieveMessageService(data);
 
     logger.info("Message Recieved Successfully");
 
@@ -71,5 +71,27 @@ export const getMessage = asyncHandler(async (req: Request, res: Response) => {
         message: "Message Fetched Successfully",
         data: result
     })
+});
+
+export const editMessage = asyncHandler(async( req : Request, res : Response) => {
+    // Parameters from req
+    const userId = (req as any).user.id.toString() as string;
+    const { roomId } = req.params as { roomId: string };
+    const { messageId, content } = req.body as { messageId: string; content: string };
+
+    const data : EditMessageRequest = {
+        userId, roomId, messageId, content
+    };
+
+    // Get the result from service function
+    const result = await editMessageService(data);
+
+    // return response
+    return res.status(200).json({
+        success : true,
+        message : "Message Updated Successfully",
+        data : result
+    });
+
 });
 
