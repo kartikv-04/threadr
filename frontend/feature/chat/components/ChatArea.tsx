@@ -9,7 +9,7 @@ import MessageInput from "./MessageInput";
 import { useMessageStore } from "@/feature/chat/MessageStore";
 
 import { useAuthStore } from "@/feature/auth/AuthStore";
-import { useUser } from "@/feature/auth/user.hook";
+import { useUser } from "@/feature/auth/auth.hook";
 import type { Message } from "../chat.type";
 import { ConfirmModal } from "@/components/ConfirmModal";
 import { Trash2 } from "lucide-react";
