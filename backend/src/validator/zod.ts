@@ -1,5 +1,7 @@
 import * as z from "zod";
 
+const objectId = z.string().trim().length(24);
+
 // Signup Zod Validation Schema
 export const Signup = z.object({
     name: z.string().min(2).max(50),
@@ -15,64 +17,64 @@ export const Signin = z.object({
 
 // New Server Creation Zod Validation
 export const NewServer = z.object({
-    userId: z.string().min(24),
+    userId: objectId,
     serverName: z.string().min(2).max(50).trim()
 })
 
 // New Room Zod Validation
 export const NewRoom = z.object({
-    userId: z.string().min(24),
+    userId: objectId,
     roomName: z.string().min(2).max(50).trim().lowercase(),
-    serverId: z.string().min(24)
+    serverId: objectId
 })
 
 // Get Message / Receive Message Zod Validation
 export const RecieveMessage = z.object({
-    userId: z.string().min(24),
-    serverId: z.string().min(24),
-    roomId: z.string().min(24),
+    userId: objectId,
+    serverId: objectId,
+    roomId: objectId,
 })
 
 // Send Message Zod Validation
 export const SendMessageSchema = z.object({
-    userId: z.string().min(24),
-    serverId: z.string().min(24),
-    roomId: z.string().min(24),
-    content: z.string().min(1, "Message content is required")
+    userId: objectId,
+    serverId: objectId,
+    roomId: objectId,
+    content: z.string().trim().min(1, "Message content is required")
 })
 
 // Get Server Members Zod Validation
 export const GetServerMemberSchema = z.object({
-    userId: z.string().min(24),
+    userId: objectId,
     serverId: z.string().min(1, "Server ID is required")
 })
 
 // Get Server List Zod Validation
 export const GetServerListSchema = z.object({
-    userId: z.string().min(24)
+    userId: objectId
 })
 
 // Get Room List Zod Validation
 export const GetRoomListSchema = z.object({
-    userId: z.string().min(24),
+    userId: objectId,
     serverId: z.string().min(1, "Server ID is required")
 })
 
 // Delete Server Zod Validation
 export const DeleteServerSchema = z.object({
-    userId: z.string().min(24),
-    serverId: z.string().min(24)
+    userId: objectId,
+    serverId: objectId
 })
 
 export const LeaveServerSchema = z.object({
-    userId: z.string().min(24),
-    serverId: z.string().min(24)
+    userId: objectId,
+    serverId: objectId
 })
 
 export const DeleteRoomSchema = z.object({
-    userId: z.string().min(24),
-    serverId: z.string().min(24),
-    roomId: z.string().min(24)
+    userId: objectId,
+    serverId: objectId,
+    roomId: objectId
 })
 
 export const generateInviteSchema = z.object({
@@ -88,4 +90,98 @@ export const inviteResponseSchema = z.object({
     code: z.string().min(1),
     expiresAt: z.date().nullable(), // Nullable because it might be "never"
     isPermanent: z.boolean(),
+});
+
+export const SignupRequestSchema = z.object({
+    body: Signup
+});
+
+export const SigninRequestSchema = z.object({
+    body: Signin
+});
+
+export const GetUserRequestSchema = z.object({
+    params: z.object({
+        userId: objectId
+    })
+});
+
+export const NewServerRequestSchema = z.object({
+    body: z.object({
+        serverName: z.string().min(2).max(50).trim()
+    })
+});
+
+export const DeleteServerRequestSchema = z.object({
+    params: z.object({
+        serverId: objectId
+    })
+});
+
+export const LeaveServerRequestSchema = z.object({
+    params: z.object({
+        serverId: objectId
+    })
+});
+
+export const CreateRoomRequestSchema = z.object({
+    params: z.object({
+        serverId: objectId
+    }),
+    body: z.object({
+        roomName: z.string().min(2).max(50).trim().toLowerCase()
+    })
+});
+
+export const GetRoomListRequestSchema = z.object({
+    params: z.object({
+        serverId: objectId
+    })
+});
+
+export const DeleteRoomRequestSchema = z.object({
+    params: z.object({
+        serverId: objectId,
+        roomId: objectId
+    })
+});
+
+export const SendMessageRequestSchema = z.object({
+    params: z.object({
+        roomId: objectId
+    }),
+    body: z.object({
+        serverId: objectId,
+        content: z.string().trim().min(1, "Message content is required")
+    })
+});
+
+export const ReceiveMessageRequestSchema = z.object({
+    params: z.object({
+        roomId: objectId
+    }),
+    query: z.object({
+        serverId: objectId,
+        page: z.coerce.number().int().min(1).optional(),
+        limit: z.coerce.number().int().min(1).max(100).optional()
+    })
+});
+
+export const CreateInviteRequestSchema = z.object({
+    params: z.object({
+        serverId: objectId
+    })
+});
+
+export const GetInviteInfoRequestSchema = z.object({
+    params: z.object({
+        code: z.string().trim().min(1)
+    })
+});
+
+export const JoinInviteRequestSchema = z.object({
+    body: z.object({
+        inviteCode: z.string().trim().min(1),
+        serverId: objectId
+    })
 });

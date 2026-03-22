@@ -3,31 +3,24 @@ import jwt from "jsonwebtoken";
 import { signin, signup, getUserById } from "../services/user.service.js";
 import { NODE_ENV, ACCESS_SECRET, REFRESH_SECRET } from "../config/env.js";
 import { asyncHandler } from "../helper/asyncHandler.js";
-import { Signin, Signup } from "../validator/zod.js";
-import { ValidationError, UnauthorizedError } from "../helper/errorClass.js";
+import { UnauthorizedError } from "../helper/errorClass.js";
 import { userModel } from "../models/user.model.js";
 import logger from "../config/logger.js";
 
 
 // Signup Controller
 export const signUp = asyncHandler(async (req: Request, res: Response) => {
+    const { name, email, password } = req.body as {
+        name: string;
+        email: string;
+        password: string;
+    };
 
-    //  Zod Validation
-    const validatedData = Signup.safeParse(req.body);
-
-    if (!validatedData.success) {
-        throw new ValidationError("Validation Failed!")
-    }
-
-    //  Destructure validated data
-    const { name, email, password } = validatedData.data;
-
-    //  Create data object that stores these variables
     const data = {
         name,
         email,
         password
-    }
+    };
 
     //  use signup controleer and get Response
     const result = await signup(data);
@@ -51,22 +44,15 @@ export const signUp = asyncHandler(async (req: Request, res: Response) => {
 
 // Signin Controller
 export const signIn = asyncHandler(async (req: Request, res: Response) => {
-    //  Zod Validation
-    const validatedData = Signin.safeParse(req.body);
+    const { email, password } = req.body as {
+        email: string;
+        password: string;
+    };
 
-    // Handle error 
-    if (!validatedData.success) {
-        throw new ValidationError("Validatoin Failed")
-    }
-
-    //  Destructure req Body
-    const { email, password } = validatedData.data;
-
-    //  Create data object
     const data = {
         email,
         password
-    }
+    };
 
     //  get results from signin service function
     const result = await signin(data);
@@ -167,8 +153,8 @@ export const logout = asyncHandler(async (req: Request, res: Response) => {
 
 // Get User by ID Controller
 export const getUser = asyncHandler(async (req: Request, res: Response) => {
-    const { userId } = req.params;
-    const user = await getUserById(userId as any );
+    const { userId } = req.params as { userId: string };
+    const user = await getUserById(userId);
     return res.status(200).json({
         success: true,
         message: "User found",

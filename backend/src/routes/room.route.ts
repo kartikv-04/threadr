@@ -1,12 +1,14 @@
 import { Router } from "express";
 import { deleteRoomController, getRoom, newRoom } from "../controllers/room.controller.js";
+import { validate } from "../middleware/validatemiddleware.js";
+import { CreateRoomRequestSchema, DeleteRoomRequestSchema, GetRoomListRequestSchema } from "../validator/zod.js";
 
 const router = Router({ mergeParams: true });
 
 // GET  - Get all rooms for a server
-router.get('/', getRoom);
+router.get('/', validate(GetRoomListRequestSchema), getRoom);
 // POST  Create a new room
-router.post('/', newRoom);
-router.delete('/:roomId', deleteRoomController);
+router.post('/', validate(CreateRoomRequestSchema), newRoom);
+router.delete('/:roomId', validate(DeleteRoomRequestSchema), deleteRoomController);
 
 export default router;
