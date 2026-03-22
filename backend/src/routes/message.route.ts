@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { editMessage, getMessage, sendMessage } from "../controllers/message.controller.js";
+import { deleteMessage, editMessage, getMessage, sendMessage } from "../controllers/message.controller.js";
 import { validate } from "../middleware/validatemiddleware.js";
-import { EditMessageRequestSchema, ReceiveMessageRequestSchema, SendMessageRequestSchema } from "../validator/zod.js";
+import { DeleteMessageRequestSchema, EditMessageRequestSchema, ReceiveMessageRequestSchema, SendMessageRequestSchema } from "../validator/zod.js";
 
 const router = Router({ mergeParams: true });
 
@@ -12,5 +12,7 @@ router.post('/', validate(SendMessageRequestSchema), sendMessage);
 router.get('/', validate(ReceiveMessageRequestSchema), getMessage);
 // PUT
 router.put('/', validate(EditMessageRequestSchema), editMessage);
+// Delete
+router.delete('/', validate(DeleteMessageRequestSchema), deleteMessage);
 
 export default router;

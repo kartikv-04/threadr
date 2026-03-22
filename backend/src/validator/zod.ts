@@ -177,6 +177,15 @@ export const EditMessageRequestSchema = z.object({
     })
 });
 
+export const DeleteMessageRequestSchema = z.object({
+    params: z.object({
+        roomId: objectId
+    }),
+    body: z.object({
+        messageId: objectId,
+    })
+});
+
 export const CreateInviteRequestSchema = z.object({
     params: z.object({
         serverId: objectId

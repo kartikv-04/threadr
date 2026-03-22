@@ -1,8 +1,8 @@
 import type { Request, Response } from "express";
-import { editMessageService, recieveMessageService, sendMessageService } from "../services/message.service.js";
+import { editMessageService, recieveMessageService, sendMessageService, deleteMessageService } from "../services/message.service.js";
 import logger from "../config/logger.js";
 import { asyncHandler } from "../helper/asyncHandler.js";
-import type { EditMessageRequest, GetMessagesRequest, SendMessageRequest } from "../types/message.js";
+import type { DeleteMessageRequest, EditMessageRequest, GetMessagesRequest, SendMessageRequest } from "../types/message.js";
 
 // 1. Send Message Controller
 export const sendMessage = asyncHandler(async (req: Request, res: Response) => {
@@ -90,6 +90,28 @@ export const editMessage = asyncHandler(async( req : Request, res : Response) =>
     return res.status(200).json({
         success : true,
         message : "Message Updated Successfully",
+        data : result
+    });
+
+});
+
+export const deleteMessage = asyncHandler(async( req : Request, res : Response) => {
+    // Parameters from req
+    const userId = (req as any).user.id.toString() as string;
+    const { roomId } = req.params as { roomId: string };
+    const { messageId } = req.body as { messageId: string };
+
+    const data : DeleteMessageRequest = {
+        userId, roomId, messageId,
+    };
+
+    // Get the result from service function
+    const result = await deleteMessageService(data);
+
+    // return response
+    return res.status(200).json({
+        success : true,
+        message : "Message deleted Successfully",
         data : result
     });
 

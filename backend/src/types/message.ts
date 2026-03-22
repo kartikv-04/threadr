@@ -35,3 +35,10 @@ export type EditMessageRequest = {
     messageId: string;
     content: string;
 }
+
+export type DeleteMessageRequest = {
+    userId: string;
+    roomId: string;
+    messageId: string;
+    
+}

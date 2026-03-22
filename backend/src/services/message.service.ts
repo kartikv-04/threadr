@@ -1,7 +1,7 @@
 import logger from "../config/logger.js"
 import { serverModel } from "../models/server.model.js"
 import { messageModel } from "../models/message.model.js"
-import type { EditMessageRequest, GetMessagesRequest, MessageResponse, SendMessageRequest } from "../types/message.js"
+import type { DeleteMessageRequest, EditMessageRequest, GetMessagesRequest, MessageResponse, SendMessageRequest } from "../types/message.js"
 import { roomModel } from "../models/room.model.js"
 import { memberModel } from "../models/member.model.js"
 import { NotFoundError, UnauthorizedError, ValidationError } from "../helper/errorClass.js";
@@ -169,4 +169,48 @@ export const editMessageService = async (data: EditMessageRequest): Promise<Mess
         roomId: updateMessage.room.toString(),
         serverId: room.server.toString()
     };
+}
+
+export const deleteMessageService = async (data: DeleteMessageRequest): Promise<undefined> => {
+    // cjeck to see if any field is missing
+    if (!data.userId || !data.roomId || !data.messageId) {
+        logger.warn("Missing Required firelds");
+        throw new ValidationError("Required fields are missing. Please provide all details.");
+    }
+
+    const room = await roomModel.findById(data.roomId).select("_id server");
+    if (!room) {
+        logger.warn("Room not found for edit message");
+        throw new NotFoundError("Room Not Found");
+    }
+
+    // Check if user is member and not banned for the room's server
+    const isMember = await memberModel.findOne({
+        server: room.server,
+        user: data.userId,
+        isBanned: false
+    });
+
+    if (!isMember) {
+        logger.warn("Unauthorized delete attempt by non-member or banned member");
+        throw new UnauthorizedError("You are not allowed to delete messages in this room.");
+    }
+
+    // Now check and validate message against room, server, and owner
+    const deleteMessage = await messageModel
+        .findOne({
+            _id: data.messageId,
+            room: data.roomId,
+            server: room.server,
+            sentBy: data.userId
+        })
+        .populate<{ sentBy: { _id: { toString(): string }; username: string } }>("sentBy", "username");
+
+    if (!deleteMessage) {
+        logger.warn("Requested message to delete was not found or does not belong to user");
+        throw new NotFoundError("Message Not Found");
+    }
+
+    // delete message 
+    await messageModel.deleteOne({ _id: data.messageId });
 }
