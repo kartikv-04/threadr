@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
-import { useChatScroll, useSendMessage } from "../chat.hook";
+import { useEffect, useMemo, useState } from "react";
+import { useChatScroll, useDeleteMessage, useEditMessage, useSendMessage } from "../chat.hook";
 import { useChatSocket } from "../useChatSocket";
 import ChatHeader from "./ChatHeader";
 import MessageList from "./MessageList";
@@ -9,7 +9,10 @@ import MessageInput from "./MessageInput";
 import { useMessageStore } from "@/feature/chat/MessageStore";
 
 import { useAuthStore } from "@/feature/auth/AuthStore";
-import { useUser } from "@/feature/auth/auth.hook";
+import { useUser } from "@/feature/auth/user.hook";
+import type { Message } from "../chat.type";
+import { ConfirmModal } from "@/components/ConfirmModal";
+import { Trash2 } from "lucide-react";
 
 interface ChatAreaProps {
   serverId: string;
@@ -42,6 +45,10 @@ export const ChatArea = ({
 
   // 4. Send Message Hook
   const { mutate: sendMessage, isPending: isSending } = useSendMessage();
+  const { mutate: updateMessage, isPending: isEditing } = useEditMessage(serverId, roomId);
+  const { mutate: removeMessage, isPending: isDeleting } = useDeleteMessage(serverId, roomId);
+  const [editingMessage, setEditingMessage] = useState<Message | null>(null);
+  const [messageToDelete, setMessageToDelete] = useState<Message | null>(null);
 
   // Clear live buffer when switching rooms
   useEffect(() => {
@@ -60,7 +67,60 @@ export const ChatArea = ({
   }, [data, liveMessages]);
 
   const handleSendMessage = (content: string) => {
+    if (editingMessage) {
+      updateMessage(
+        {
+          roomId,
+          messageId: editingMessage.messageId,
+          content,
+        },
+        {
+          onSuccess: () => setEditingMessage(null),
+        }
+      );
+      return;
+    }
+
     sendMessage({ serverId, roomId, content });
+  };
+
+  const handleEditMessage = (message: Message) => {
+    setEditingMessage(message);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingMessage(null);
+  };
+
+  const handleDeleteMessage = (message: Message) => {
+    setMessageToDelete(message);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!messageToDelete) return;
+
+    removeMessage(
+      {
+        roomId,
+        messageId: messageToDelete.messageId,
+      },
+      {
+        onSuccess: () => {
+          if (editingMessage?.messageId === messageToDelete.messageId) {
+            setEditingMessage(null);
+          }
+          setMessageToDelete(null);
+        },
+        onError: () => {
+          setMessageToDelete(null);
+        },
+      }
+    );
+  };
+
+  const handleCancelDelete = () => {
+    if (isDeleting) return;
+    setMessageToDelete(null);
   };
 
   if (status === "error") {
@@ -83,17 +143,32 @@ export const ChatArea = ({
         loadMore={fetchNextPage}
         hasMore={hasNextPage}
         isLoadingMore={isFetchingNextPage}
+        onEditMessage={handleEditMessage}
+        onDeleteMessage={handleDeleteMessage}
       />
 
-      <div className="mt-auto border-t border-neutral-800/60 h-[68px] flex items-center">
+      <div className="mt-auto shrink-0 border-t border-neutral-800/60 bg-neutral-950">
         <div className="w-full">
           <MessageInput
             onSend={handleSendMessage}
-            disabled={isSending}
+            disabled={isSending || isEditing || isDeleting}
             roomName={roomName}
+            editingMessage={editingMessage}
+            onCancelEdit={handleCancelEdit}
           />
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={!!messageToDelete}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        title="Delete message?"
+        description="Do you want to delete this message? This action cannot be undone."
+        confirmText="Delete"
+        isPending={isDeleting}
+        icon={<Trash2 size={22} />}
+      />
     </div>
   );
 };

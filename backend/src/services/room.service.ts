@@ -1,6 +1,6 @@
 import logger from "../config/logger.js"
 import { roomModel } from "../models/room.model.js"
-import type { NewRoomRequest, NewRoomResponse, GetRoomRequest, GetRoomResponse, DeleteRoomRequest } from "../types/types.js"
+import type { NewRoomRequest, NewRoomResponse, GetRoomRequest, GetRoomResponse, DeleteRoomRequest } from "../types/room.js"
 import { NotFoundError, ForbiddenError, ValidationError } from "../helper/errorClass.js";
 import { memberModel } from "../models/member.model.js";
 
@@ -15,7 +15,7 @@ export const createRoom = async (data: NewRoomRequest): Promise<NewRoomResponse>
     }
 
     // Logic to allow only admin of server to create new channel/room
-    const serverAdmin = await memberModel.findOne({user : data.userId, server : data.serverId})
+    const serverAdmin = await memberModel.findOne({ user: data.userId, server: data.serverId })
 
     if (!serverAdmin || !serverAdmin.role.includes("admin")) {
         throw new ForbiddenError("Only server admin can create Room within Server!")
@@ -62,9 +62,9 @@ export const getRooms = async (data: GetRoomRequest): Promise<GetRoomResponse> =
     isMember.role.includes("admin") ? findRooms = findRoomsForAdmin : findRooms = findRoomsForUser;
 
     const roomList = findRooms.map(room => {
-        const rooms = room as any as {server : string, _id : string, roomName : string};
+        const rooms = room as any as { server: string, _id: string, roomName: string };
         return {
-            serverId : rooms.server,
+            serverId: rooms.server,
             roomId: rooms._id.toString(),
             roomName: rooms.roomName
         }
@@ -81,7 +81,7 @@ export const deleteRoom = async (data: DeleteRoomRequest): Promise<void> => {
     };
 
     // Find associated user in member model
-    const findMember = await memberModel.findOne({ user: data.userId, server: data.serverId});
+    const findMember = await memberModel.findOne({ user: data.userId, server: data.serverId });
     if (!findMember) {
         throw new NotFoundError("Member Not Found");
     };

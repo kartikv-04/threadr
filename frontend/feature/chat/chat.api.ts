@@ -3,7 +3,10 @@ import {
     SendMessageRequest,
     SendMessageResponse,
     GetMessagesRequest,
-    GetMessagesResponse
+    GetMessagesResponse,
+    EditMessageRequest,
+    DeleteMessageRequest,
+    DeleteMessageResponse
 } from "./chat.type";
 
 // Send a message to a room
@@ -37,3 +40,26 @@ export const getMessages = async (payload: GetMessagesRequest): Promise<GetMessa
         throw error;
     }
 };
+
+// Edit Message
+export const editMessage = async (data: EditMessageRequest): Promise<SendMessageResponse> => {
+    const res = await api.put(`/rooms/${data.roomId}/messages`, {
+        content: data.content,
+        messageId: data.messageId
+    });
+    // Backend returns: { success, message, data: {...} }
+    return res.data.data;
+};
+
+// Delete Message
+export const deleteMessage = async (data: DeleteMessageRequest): Promise<DeleteMessageResponse> => {
+    await api.delete(`/rooms/${data.roomId}/messages`, {
+        data: {
+            messageId: data.messageId
+        }
+    });
+
+    return { messageId: data.messageId };
+};
+
+

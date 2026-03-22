@@ -18,6 +18,17 @@ export type SendMessageRequest = {
     content: string;
 };
 
+export type EditMessageRequest = {
+    roomId: string;
+    messageId: string;
+    content: string;
+};
+
+export type DeleteMessageRequest = {
+    roomId: string;
+    messageId: string;
+};
+
 export type GetMessagesRequest = {
     serverId: string;
     roomId: string;
@@ -30,10 +41,17 @@ export type SendMessageResponse = {
     messageId: string;
     content: string;
     userId: string;
+    username?: string;
     isEdited: boolean;
     createdAt: string;
+    roomId?: string;
+    serverId?: string;
 };
 
 export type GetMessagesResponse = {
     messages: Message[];
+};
+
+export type DeleteMessageResponse = {
+    messageId: string;
 };

@@ -1,4 +1,4 @@
-import type { CreateServerRequest, NewServerResponse, GetServerRequest, GetServerResponse, DeleteServerReqest, LeaveServerRequest } from "../types/types.js";
+import type { CreateServerRequest, NewServerResponse, GetServerRequest, GetServerResponse, DeleteServerReqest, LeaveServerRequest } from "../types/server.js";
 import { serverModel } from "../models/server.model.js"
 import logger from "../config/logger.js"
 import { NotFoundError, ForbiddenError, ValidationError } from "../helper/errorClass.js";

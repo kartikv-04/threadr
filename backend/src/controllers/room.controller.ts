@@ -2,33 +2,22 @@ import logger from "../config/logger.js";
 import type { Request, Response } from "express";
 import { createRoom, getRooms, deleteRoom } from "../services/room.service.js";
 import { asyncHandler } from "../helper/asyncHandler.js";
-import { NewRoom, GetRoomListSchema, DeleteRoomSchema } from "../validator/zod.js";
-import { ValidationError } from "../helper/errorClass.js";
 
 //  Create a room
 export const newRoom = asyncHandler(async (req: Request, res: Response) => {
     //  Get userId
-    const userId = (req as any)?.user.id.toString();
+    const userId = (req as any).user.id.toString() as string;
 
     //  Get serverId and roomName
-    const { serverId } = req.params;
-    const roomName = req.body.roomName;
+    const { serverId } = req.params as { serverId: string };
+    const { roomName } = req.body as { roomName: string };
 
     logger.debug(`userId : ${userId}`);
     logger.debug(`serverId : ${serverId}`);
     logger.debug(`roomName : ${roomName}`);
 
-    //  Validation
-    const validatedData = NewRoom.safeParse({ userId, serverId, roomName });
-
-    // Handle Error
-    if (!validatedData.success) {
-        logger.error(validatedData.error, "Validation error");
-        throw new ValidationError("Validation Failed!")
-    }
-
     //  Creat room
-    const result = await createRoom(validatedData.data);
+    const result = await createRoom({ userId, serverId, roomName });
 
     logger.info(`New Room Created Successfully : ${result.roomName}`);
 
@@ -49,19 +38,11 @@ export const newRoom = asyncHandler(async (req: Request, res: Response) => {
 //  Get Room List
 export const getRoom = asyncHandler(async (req: Request, res: Response) => {
     //  Get userId 
-    const userId = (req as any)?.user.id.toString();
-    const { serverId } = req.params
-
-    //  Validate
-    const validatedData = GetRoomListSchema.safeParse({ userId, serverId });
-
-    // Handle Error
-    if (!validatedData.success) {
-        throw new ValidationError("Validation Failed!")
-    }
+    const userId = (req as any).user.id.toString() as string;
+    const { serverId } = req.params as { serverId: string };
 
     //  Get rooms
-    const result = await getRooms(validatedData.data);
+    const result = await getRooms({ userId, serverId });
 
     logger.info("Room list Fetched Successfully");
 
@@ -76,21 +57,11 @@ export const getRoom = asyncHandler(async (req: Request, res: Response) => {
 // Controller function For deleting Server
 export const deleteRoomController = asyncHandler(async (req: Request, res: Response) => {
     // Get user id
-    const userId = (req as any)?.user.id.toString();
-
-    //  Destructure the req body
-    const { serverId, roomId } = req.params;
-
-    //  Validate using Zod
-    const validatedData = DeleteRoomSchema.safeParse({ userId, serverId, roomId });
-
-    // Handle Erorr
-    if (!validatedData.success) {
-        throw new ValidationError("Validation Failed!")
-    }
+    const userId = (req as any).user.id.toString() as string;
+    const { serverId, roomId } = req.params as { serverId: string; roomId: string };
 
     // Delete Server
-    await deleteRoom(validatedData.data);
+    await deleteRoom({ userId, serverId, roomId });
 
     // Emit event to server room
     const io = req.app.get("io");

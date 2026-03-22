@@ -1,6 +1,6 @@
 import { Server } from "socket.io";
 import logger from "../config/logger.js";
-import type { AuthenticatedSocket } from "../types/types.js";
+import type { AuthenticatedSocket } from "../types/socket.js";
 import { sendMessageService } from "../services/message.service.js";
 
 export const messageHandler = (io: Server, socket: AuthenticatedSocket) => {
@@ -25,7 +25,7 @@ export const messageHandler = (io: Server, socket: AuthenticatedSocket) => {
 
             // Broadcast to everyone in the room (including sender)
             io.to(roomId).emit("send:message:room", newMessage);
-            
+
         } catch (error: any) {
             logger.error(`Failed to send message: ${error.message}`);
             socket.emit("error", { message: "Failed to send message" });

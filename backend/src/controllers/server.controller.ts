@@ -2,27 +2,16 @@ import type { Request, Response } from "express";
 import { createServer, getServerList, deleteServers, leaveServer } from "../services/server.service.js";
 import logger from "../config/logger.js";
 import { asyncHandler } from "../helper/asyncHandler.js";
-import { NewServer, GetServerListSchema, DeleteServerSchema, LeaveServerSchema } from "../validator/zod.js";
-import { ValidationError } from "../helper/errorClass.js";
 
 // Controller function for New Server
 export const newServer = asyncHandler(async (req: Request, res: Response) => {
     // Get user id
-    const userId = (req as any)?.user.id.toString();
+    const userId = (req as any).user.id.toString() as string;
 
-    //  Destructure the req body
-    const { serverName } = req.body
-
-    //  Validate using Zod
-    const validatedData = NewServer.safeParse({ userId, serverName });
-
-    // Handle Erorr
-    if (!validatedData.success) {
-        throw new ValidationError("Validation Failed!")
-    }
+    const { serverName } = req.body as { serverName: string };
 
     //  Create server by using function
-    const result = await createServer(validatedData.data as any);
+    const result = await createServer({ userId, serverName });
 
     logger.info(`New Server Created : ${result.serverName}`);
 
@@ -37,18 +26,10 @@ export const newServer = asyncHandler(async (req: Request, res: Response) => {
 //  Controller Function For Getting All Server Name
 export const serverName = asyncHandler(async (req: Request, res: Response) => {
     //  Get userId 
-    const userId = (req as any)?.user.id.toString();
-
-    //  Validate userId
-    const validatedData = GetServerListSchema.safeParse({ userId });
-
-    // Handle Error
-    if (!validatedData.success) {
-        throw new ValidationError("Validation Failed!")
-    }
+    const userId = (req as any).user.id.toString() as string;
 
     //  Get All Server names using correct service function
-    const result = await getServerList(validatedData.data as any);
+    const result = await getServerList({ userId });
 
     logger.info("Server Names Fetched Successfully");
 
@@ -63,21 +44,11 @@ export const serverName = asyncHandler(async (req: Request, res: Response) => {
 // Controller function For deleting Server
 export const deleteServer = asyncHandler(async (req: Request, res: Response) => {
     // Get user id
-    const userId = (req as any)?.user.id.toString();
-
-    //  Destructure the req body
-    const { serverId } = req.params;
-
-    //  Validate using Zod
-    const validatedData = DeleteServerSchema.safeParse({ userId, serverId });
-
-    // Handle Erorr
-    if (!validatedData.success) {
-        throw new ValidationError("Validation Failed!")
-    }
+    const userId = (req as any).user.id.toString() as string;
+    const { serverId } = req.params as { serverId: string };
 
     // Delete Server
-    await deleteServers(validatedData.data as any);
+    await deleteServers({ userId, serverId });
 
     // Emit event to server room
     const io = req.app.get("io");
@@ -92,21 +63,11 @@ export const deleteServer = asyncHandler(async (req: Request, res: Response) => 
 // Controller function For leaving Server
 export const leaveServerController = asyncHandler(async (req: Request, res: Response) => {
     // Get user id
-    const userId = (req as any)?.user.id.toString();
-
-    //  Destructure the req body
-    const { serverId } = req.params;
-
-    //  Validate using Zod
-    const validatedData = LeaveServerSchema.safeParse({ userId, serverId });
-
-    // Handle Error
-    if (!validatedData.success) {
-        throw new ValidationError("Validation Failed!")
-    }
+    const userId = (req as any).user.id.toString() as string;
+    const { serverId } = req.params as { serverId: string };
 
     // Leave Server
-    await leaveServer(validatedData.data as any);
+    await leaveServer({ userId, serverId });
 
     //  Return success
     return res.status(200).json({
