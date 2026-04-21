@@ -172,7 +172,7 @@ export const editMessageService = async (data: EditMessageRequest): Promise<Mess
 }
 
 export const deleteMessageService = async (data: DeleteMessageRequest): Promise<undefined> => {
-    // cjeck to see if any field is missing
+    // check to see if any field is missing
     if (!data.userId || !data.roomId || !data.messageId) {
         logger.warn("Missing Required firelds");
         throw new ValidationError("Required fields are missing. Please provide all details.");
