@@ -1,0 +1,36 @@
+services :
+  backend:
+    build: ./backend
+    ports:
+      - "5001:5001"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/mini-chat-app
+      - ACCESS_SECRET=placementinternship
+      - REFRESH_SECRET=internship
+      - PORT=5001
+      - LOG_LEVEL=debug
+      - NODE_ENV=development
+      - CLIENT_URL=http://frontend:3000
+
+    depends_on:
+      - mongo
+  
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://backend:5001/api/v1
+      - NEXT_PUBLIC_SOCKET_URL=http://backend:5001
+    depends_on:
+      - backend
+    
+  mongo:
+    image: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+volumes:
+  mongo_data:
+    
