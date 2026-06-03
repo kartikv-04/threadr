@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import { ACCESS_SECRET, REFRESH_SECRET } from '../config/env.js';
 import type { Types } from 'mongoose';
 import logger from '../config/logger.js';
-import { createServer } from '../services/server.service.js';
+import { createServer } from '../service/server.service.js';
 import { userModel } from '../models/user.model.js';
 
 
