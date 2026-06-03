@@ -28,7 +28,7 @@ export const hashPassword = async (password: string): Promise<string> => {
 }
 
 export const generateToken = (userId: Types.ObjectId): TokenPair => {
-  // Generate AccessToken and Refrshtoken for user
+  // Generate AccessToken and Refreshtoken for user
   const accessToken = jwt.sign({ id: userId }, ACCESS_SECRET, { expiresIn: '15m' });
   const refreshToken = jwt.sign({ id: userId }, REFRESH_SECRET, { expiresIn: '7d' });
   return {
