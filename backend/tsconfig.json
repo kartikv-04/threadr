@@ -2,14 +2,14 @@
   // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
     // File Layout
-    "rootDir": "./src",
+    "rootDir": ".",
     "outDir": "./dist",
 
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
     "module": "nodenext",
     "target": "esnext",
-    "types": ["node", "express"],
+    "types": ["node", "jest", "express"],
     // For nodejs:
     "lib": ["esnext"],
     // and npm install -D @types/node
@@ -41,7 +41,8 @@
     "skipLibCheck": true,
   },
   "include": [
-      "src/**/*"
+      "src/**/*",
+      "tests/**/*"
   ],
     "exclude": [
       "node_modules",

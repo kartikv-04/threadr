@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { editMessageService, recieveMessageService, sendMessageService, deleteMessageService } from "../services/message.service.js";
+import { editMessageService, recieveMessageService, sendMessageService, deleteMessageService } from "../service/message.service.js";
 import logger from "../config/logger.js";
 import { asyncHandler } from "../helper/asyncHandler.js";
 import type { DeleteMessageRequest, EditMessageRequest, GetMessagesRequest, SendMessageRequest } from "../types/message.js";

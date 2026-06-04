@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { deleteMessage, editMessage, getMessage, sendMessage } from "../controllers/message.controller.js";
+import { deleteMessage, editMessage, getMessage, sendMessage } from "../controller/message.controller.js";
 import { validate } from "../middleware/validatemiddleware.js";
 import { DeleteMessageRequestSchema, EditMessageRequestSchema, ReceiveMessageRequestSchema, SendMessageRequestSchema } from "../validator/zod.js";
 

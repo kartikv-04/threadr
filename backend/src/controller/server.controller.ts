@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { createServer, getServerList, deleteServers, leaveServer } from "../services/server.service.js";
+import { createServer, getServerList, deleteServers, leaveServer } from "../service/server.service.js";
 import logger from "../config/logger.js";
 import { asyncHandler } from "../helper/asyncHandler.js";
 

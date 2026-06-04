@@ -4,7 +4,7 @@ import serverRouter from '../routes/server.route.js';
 import roomRouter from '../routes/room.route.js';
 import messageRouter from '../routes/message.route.js';
 import { authenticate } from "../middleware/authMiddleware.js";
-import { getInviteInfoController, joinInviteController } from "../controllers/invite.controller.js";
+import { getInviteInfoController, joinInviteController } from "../controller/invite.controller.js";
 import { validate } from "../middleware/validatemiddleware.js";
 import { GetInviteInfoRequestSchema, JoinInviteRequestSchema } from "../validator/zod.js";
 

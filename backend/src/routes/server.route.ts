@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { newServer, serverName, deleteServer, leaveServerController } from "../controllers/server.controller.js";
-import { createInviteController } from "../controllers/invite.controller.js";
+import { newServer, serverName, deleteServer, leaveServerController } from "../controller/server.controller.js";
+import { createInviteController } from "../controller/invite.controller.js";
 import { validate } from "../middleware/validatemiddleware.js";
 import { CreateInviteRequestSchema, DeleteServerRequestSchema, LeaveServerRequestSchema, NewServerRequestSchema } from "../validator/zod.js";
 

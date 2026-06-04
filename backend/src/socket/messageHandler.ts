@@ -1,7 +1,7 @@
 import { Server } from "socket.io";
 import logger from "../config/logger.js";
 import type { AuthenticatedSocket } from "../types/socket.js";
-import { sendMessageService } from "../services/message.service.js";
+import { sendMessageService } from "../service/message.service.js";
 
 export const messageHandler = (io: Server, socket: AuthenticatedSocket) => {
 
