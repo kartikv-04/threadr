@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import { signin, signup, getUserById } from "../services/user.service.js";
+import { signin, signup, getUserById } from "../service/user.service.js";
 import { NODE_ENV, ACCESS_SECRET, REFRESH_SECRET } from "../config/env.js";
 import { asyncHandler } from "../helper/asyncHandler.js";
 import { UnauthorizedError } from "../helper/errorClass.js";

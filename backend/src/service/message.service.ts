@@ -4,7 +4,7 @@ import { messageModel } from "../models/message.model.js"
 import type { DeleteMessageRequest, EditMessageRequest, GetMessagesRequest, MessageResponse, SendMessageRequest } from "../types/message.js"
 import { roomModel } from "../models/room.model.js"
 import { memberModel } from "../models/member.model.js"
-import { NotFoundError, UnauthorizedError, ValidationError } from "../helper/errorClass.js";
+import { ForbiddenError, NotFoundError, UnauthorizedError, ValidationError } from "../helper/errorClass.js";
 
 
 export const sendMessageService = async (data: SendMessageRequest): Promise<MessageResponse> => {
@@ -112,43 +112,29 @@ export const recieveMessageService = async (data: GetMessagesRequest): Promise<M
 }
 
 export const editMessageService = async (data: EditMessageRequest): Promise<MessageResponse> => {
-    // cjeck to see if any field is missing
+    // check to see if any field is missing
     if (!data.userId || !data.roomId || !data.messageId || !data.content) {
         logger.warn("Missing Required firelds");
         throw new ValidationError("Required fields are missing. Please provide all details.");
     }
 
-    const room = await roomModel.findById(data.roomId).select("_id server");
-    if (!room) {
+    // Check if message exist in Database or not
+    const updateMessage = await messageModel.findById(data.messageId).populate('sentBy', 'username');
+    if(!updateMessage){
+        logger.warn("Message does not exist");
+        throw new NotFoundError("Message Does not Exist");
+    }
+
+    // Check if room really exist or not with given information
+    if (updateMessage.room.toString() != data.roomId) {
         logger.warn("Room not found for edit message");
         throw new NotFoundError("Room Not Found");
     }
 
-    // Check if user is member and not banned for the room's server
-    const isMember = await memberModel.findOne({
-        server: room.server,
-        user: data.userId,
-        isBanned: false
-    });
-
-    if (!isMember) {
-        logger.warn("Unauthorized edit attempt by non-member or banned member");
-        throw new UnauthorizedError("You are not allowed to edit messages in this room.");
-    }
-
-    // Now check and validate message against room, server, and owner
-    const updateMessage = await messageModel
-        .findOne({
-            _id: data.messageId,
-            room: data.roomId,
-            server: room.server,
-            sentBy: data.userId
-        })
-        .populate<{ sentBy: { _id: { toString(): string }; username: string } }>("sentBy", "username");
-
-    if (!updateMessage) {
-        logger.warn("Requested message to edit was not found or does not belong to user");
-        throw new NotFoundError("Message Not Found");
+    // Check if the requesting user is the creator of the message
+    if ((updateMessage.sentBy as any)._id.toString() !== data.userId) {
+        logger.warn("Forbidden edit attempt by non-owner");
+        throw new ForbiddenError("You are not allowed to edit messages in this room.");
     }
 
     // Update the message
@@ -162,12 +148,12 @@ export const editMessageService = async (data: EditMessageRequest): Promise<Mess
     return {
         messageId: updateMessage._id.toString(),
         content: updateMessage.content,
-        userId: updateMessage.sentBy._id.toString(),
-        username: updateMessage.sentBy.username,
+        userId: (updateMessage.sentBy as any)._id.toString(),
+        username: (updateMessage.sentBy as any).username,
         isEdited: updateMessage.isEdited,
         createdAt: updateMessage.createdAt,
         roomId: updateMessage.room.toString(),
-        serverId: room.server.toString()
+        serverId: updateMessage.server.toString()
     };
 }
 
@@ -178,37 +164,23 @@ export const deleteMessageService = async (data: DeleteMessageRequest): Promise<
         throw new ValidationError("Required fields are missing. Please provide all details.");
     }
 
-    const room = await roomModel.findById(data.roomId).select("_id server");
-    if (!room) {
+    // Check if message exist in Database or not
+    const existMessage = await messageModel.findById(data.messageId);
+    if(!existMessage){
+        logger.warn("Message does not exist");
+        throw new NotFoundError("Message Does not Exist");
+    }
+
+    // Check if room really exist or not with given information
+    if (existMessage.room.toString() != data.roomId) {
         logger.warn("Room not found for edit message");
         throw new NotFoundError("Room Not Found");
     }
 
-    // Check if user is member and not banned for the room's server
-    const isMember = await memberModel.findOne({
-        server: room.server,
-        user: data.userId,
-        isBanned: false
-    });
-
-    if (!isMember) {
-        logger.warn("Unauthorized delete attempt by non-member or banned member");
-        throw new UnauthorizedError("You are not allowed to delete messages in this room.");
-    }
-
-    // Now check and validate message against room, server, and owner
-    const deleteMessage = await messageModel
-        .findOne({
-            _id: data.messageId,
-            room: data.roomId,
-            server: room.server,
-            sentBy: data.userId
-        })
-        .populate<{ sentBy: { _id: { toString(): string }; username: string } }>("sentBy", "username");
-
-    if (!deleteMessage) {
-        logger.warn("Requested message to delete was not found or does not belong to user");
-        throw new NotFoundError("Message Not Found");
+    // Check if the requesting user is the creator of the message
+    if (existMessage.sentBy.toString() !== data.userId) {
+        logger.warn("Forbidden delete attempt by non-owner");
+        throw new ForbiddenError("You are not allowed to delete messages in this room.");
     }
 
     // delete message 

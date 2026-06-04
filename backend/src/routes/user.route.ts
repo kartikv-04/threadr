@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { signIn, signUp, refreshToken, logout, getUser } from "../controllers/user.controller.js";
+import { signIn, signUp, refreshToken, logout, getUser } from "../controller/user.controller.js";
 import { validate } from "../middleware/validatemiddleware.js";
 import { GetUserRequestSchema, SigninRequestSchema, SignupRequestSchema } from "../validator/zod.js";
 

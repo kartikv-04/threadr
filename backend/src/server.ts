@@ -35,8 +35,8 @@ const onConnection = (socket: Socket) => {
 io.on("connection", onConnection);
 
 // start Server
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
     logger.info("Initializing server components...");
-    connectDB();
+    await connectDB();
     logger.info(`Server is running on port ${PORT}`);
 });

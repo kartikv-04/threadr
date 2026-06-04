@@ -1,6 +1,6 @@
 import logger from "../config/logger.js";
 import type { Request, Response } from "express";
-import { createRoom, getRooms, deleteRoom } from "../services/room.service.js";
+import { createRoom, getRooms, deleteRoom } from "../service/room.service.js";
 import { asyncHandler } from "../helper/asyncHandler.js";
 
 //  Create a room
