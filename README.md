@@ -1,89 +1,116 @@
 # Threadr
 
-Threadr is a real-time, server-based chat application designed for seamless group communication. It provides a premium user experience with instant updates, role-based access control, and a sleek, Discord-inspired interface.
+Threadr is a real-time, server-based chat application designed for seamless group communication. It provides instantaneous updates, role-based access control, and a scalable architecture to support multiple concurrent users and channels.
 
-Note: Threadr is optimized for desktop and laptop screens (wide screens) and is not currently supported on mobile devices.
+Note: The application interface is currently optimized for desktop and wide-screen layouts. Mobile support is not yet implemented.
 
-## Features
+## Core Features
 
-- **Real-Time Messaging**: Built on Socket.io for instantaneous communication and UI synchronization.
-- **Role-Based Access Control (RBAC)**: Comprehensive permission system allowing Admins to manage servers and rooms while providing a clean interface for Members.
-- **Server & Room Organization**: Create multiple servers and organize them into dedicated rooms for focused discussions.
-- **Smart Invite System**: Quickly grow your community with unique, shareable invite links.
-- **Secure Authentication**: JWT-based auth with automatic token refreshing and seamless session persistence.
-- **Premium UI/UX**: A dark mode interface built with Next.js, Tailwind CSS, and Shadcn UI.
+- Real-Time Messaging: Bidirectional, low-latency communication powered by Socket.io.
+- Role-Based Access Control (RBAC): Hierarchical permission system for server administration, room management, and standard member access.
+- Server and Room Organization: Logical separation of communities into servers, further organized into dedicated contextual rooms.
+- Invite System: Secure token-based invitation links for community expansion.
+- Authentication: JWT-based authentication flow featuring automatic token refreshing and persistent sessions.
+- Continuous Integration: Automated test suites and linting workflows integrated via GitHub Actions.
 
-## Tech Stack
+## Technology Stack
 
-### Frontend
+Frontend:
 - Framework: Next.js (App Router)
 - State Management: Zustand
-- Data Fetching: TanStack Query (React Query)
-- Real-time: Socket.io Client
-- Styling: Tailwind CSS & Shadcn UI
+- Data Synchronization: TanStack Query
+- Real-time Client: Socket.io-client
+- Styling: Tailwind CSS, Shadcn UI
+- Testing: Vitest, React Testing Library
 
-### Backend
+Backend:
 - Runtime: Node.js
 - Framework: Express.js
-- Database: MongoDB with Mongoose
-- Authentication: JWT (JSON Web Tokens)
+- Database: MongoDB via Mongoose
+- Authentication: JSON Web Tokens (JWT)
 - Validation: Zod
 - Logging: Pino
 
-## Getting Started
+## Local Development Setup
 
 ### Prerequisites
-- Node.js (v18 or higher)
-- MongoDB (Local or Atlas)
-- npm or yarn
 
-### Installation
+Ensure you have the following installed on your local machine:
+- Node.js (v18.0.0 or higher)
+- MongoDB (Local instance or MongoDB Atlas)
+- npm package manager
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd mini-chat-app
-   ```
+### Backend Configuration
 
-2. **Backend Setup**
+1. Navigate to the backend directory and install dependencies:
    ```bash
    cd backend
    npm install
    ```
-   - Create a `.env` file in the `backend` directory:
-     ```env
-     PORT=5001
-     MONGO_URI=your_mongodb_uri
-     ACCESS_SECRET=your_access_secret
-     REFRESH_SECRET=your_refresh_secret
-     CLIENT_URL=http://localhost:3000
-     NODE_ENV=development
-     ```
-   - Start the server:
-     ```bash
-     npm run dev
-     ```
 
-3. **Frontend Setup**
+2. Create a `.env` file in the `backend` directory with the following variables:
+   ```env
+   PORT=5001
+   MONGO_URI=your_mongodb_connection_string
+   ACCESS_SECRET=your_jwt_access_secret
+   REFRESH_SECRET=your_jwt_refresh_secret
+   CLIENT_URL=http://localhost:3000
+   NODE_ENV=development
+   ```
+
+3. Start the backend development server:
    ```bash
-   cd ../frontend
+   npm run dev
+   ```
+
+### Frontend Configuration
+
+1. Navigate to the frontend directory and install dependencies:
+   ```bash
+   cd frontend
    npm install
    ```
-   - Create a `.env.local` file in the `frontend` directory:
-     ```env
-     NEXT_PUBLIC_API_URL=http://localhost:5001/api/v1
-     NEXT_PUBLIC_SOCKET_URL=http://localhost:5001
-     ```
-   - Start the development server:
-     ```bash
-     npm run dev
-     ```
 
-## Architecture Highlights
+2. Create a `.env` file in the `frontend` directory with the following variables:
+   ```env
+   NEXT_PUBLIC_API_URL=http://localhost:5001/api/v1
+   NEXT_PUBLIC_SOCKET_URL=http://localhost:5001
+   ```
 
-- **Data Invalidation**: Uses React Query to automatically refresh UI components derived from real-time socket events.
-- **Middleware Security**: Robust backend middleware for authenticating both REST requests and Socket connections.
-- **TypeScript**: Fully typed codebase for developer productivity and reduced runtime errors.
+3. Start the frontend development server:
+   ```bash
+   npm run dev
+   ```
+
+The application will be available at `http://localhost:3000`.
+
+## Testing
+
+Both the frontend and backend incorporate comprehensive testing suites.
+
+### Backend Tests (Jest)
+
+The backend includes unit and integration tests using Jest and Supertest.
+
+```bash
+cd backend
+npm run test
+```
+
+### Frontend Tests (Vitest)
+
+The frontend includes state management and component tests using Vitest and React Testing Library.
+
+```bash
+cd frontend
+npm run test
+```
+
+## Architecture Notes
+
+- Data Invalidation: The application uses TanStack Query to automatically refresh UI state derived from real-time socket events, ensuring data consistency without manual refetching.
+- Middleware Security: The backend implements strict middleware for authenticating both REST endpoints and WebSocket connections to prevent unauthorized access.
+- CI/CD: The repository contains both frontend and backend codebases, with GitHub Actions configured to strictly enforce linting and passing tests on pull requests and main branch merges.
 
 ## License
 
