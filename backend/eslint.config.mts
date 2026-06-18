@@ -1,5 +1,6 @@
 // eslint.config.mjs
 import tsParser from "@typescript-eslint/parser";
+import tsPlugin from "@typescript-eslint/eslint-plugin";
 import prettierPlugin from "eslint-plugin-prettier";
 import { defineConfig } from "eslint/config";
 
@@ -16,6 +17,7 @@ export default defineConfig([
     },
     plugins: {
       prettier: prettierPlugin,
+      "@typescript-eslint": tsPlugin,
     },
     rules: {
       "prettier/prettier": ["error"], // Prettier formatting errors

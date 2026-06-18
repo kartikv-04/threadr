@@ -6,26 +6,24 @@ import logger from '../config/logger.js';
 import { createServer } from '../service/server.service.js';
 import { userModel } from '../models/user.model.js';
 
-
 type TokenPair = {
-  accessToken: string,
-  refreshToken: string
-}
+  accessToken: string;
+  refreshToken: string;
+};
 
 type PersonalServer = {
-  serverId: string,
-  roomId: string,
-  serverName: string,
-  roomName: string
-
-}
+  serverId: string;
+  roomId: string;
+  serverName: string;
+  roomName: string;
+};
 
 export const hashPassword = async (password: string): Promise<string> => {
   // Generate hash password for user password
   const salt = await bcrypt.genSalt(10);
   const hashPassword = await bcrypt.hash(password, salt);
   return hashPassword;
-}
+};
 
 export const generateToken = (userId: Types.ObjectId): TokenPair => {
   // Generate AccessToken and Refreshtoken for user
@@ -34,24 +32,23 @@ export const generateToken = (userId: Types.ObjectId): TokenPair => {
   return {
     accessToken,
     refreshToken
-  }
-
-}
+  };
+};
 
 export const newPersonalServer = async (userId: string): Promise<PersonalServer> => {
   try {
     // Check if user if user id is not empty
     if (!userId) {
-      throw new Error("user id Not provided!");
+      throw new Error('user id Not provided!');
     }
 
-    logger.debug("Userid provided");
+    logger.debug('Userid provided');
 
     // Create a default Personal Welcome Server with Welcome room in it
     const serverData = {
       userId: userId,
-      serverName: "Personal"
-    }
+      serverName: 'Personal'
+    };
 
     const personalServer = await createServer(serverData);
 
@@ -62,33 +59,31 @@ export const newPersonalServer = async (userId: string): Promise<PersonalServer>
       serverId: personalServer.serverId,
       roomId: personalServer.roomId,
       serverName: personalServer.serverName,
-      roomName: "general"
+      roomName: 'general'
     };
-
+  } catch (err: any) {
+    logger.error('Error creating new Server while sign up!!', err);
+    throw new Error('Personal server could not be created!');
   }
-  catch (err: any) {
-    logger.error("Error creating new Server while sign up!!", err);
-    throw new Error("Personal server could not be created!");
-  }
-}
+};
 
 export function calculateExpiryDate(expiresIn?: string): Date | null {
-  if (!expiresIn || expiresIn === "never") {
+  if (!expiresIn || expiresIn === 'never') {
     return null; // link lasts forever
   }
 
   const now = new Date(); // Start with "Now"
 
   switch (expiresIn) {
-    case "30m":
+    case '30m':
       return new Date(now.getTime() + 30 * 60 * 1000);
-    case "1h":
+    case '1h':
       return new Date(now.getTime() + 60 * 60 * 1000);
-    case "6h":
+    case '6h':
       return new Date(now.getTime() + 6 * 60 * 60 * 1000);
-    case "1d":
+    case '1d':
       return new Date(now.getTime() + 24 * 60 * 60 * 1000);
-    case "7d":
+    case '7d':
       return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
     default:
       return null;
@@ -107,4 +102,4 @@ export const generateUsername = async (name: string): Promise<string> => {
     exists = await userModel.findOne({ username });
   }
   return username;
-}
+};

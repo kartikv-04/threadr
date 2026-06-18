@@ -15,28 +15,28 @@ const PORT = process.env.PORT || 5001; // Define PORT
 
 const server = http.createServer(app);
 const io = new Server(server, {
-    cors: {
-        origin: CLIENT_URL,
-        methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-        credentials: true
-    }
+  cors: {
+    origin: CLIENT_URL,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    credentials: true
+  }
 });
 
 // Attach io to app before listening
-app.set("io", io);
+app.set('io', io);
 
 io.use(socketAuth);
 
 const onConnection = (socket: Socket) => {
-    roomHandler(io, socket);
-    messageHandler(io, socket);
-}
+  roomHandler(io, socket);
+  messageHandler(io, socket);
+};
 
-io.on("connection", onConnection);
+io.on('connection', onConnection);
 
 // start Server
 server.listen(PORT, async () => {
-    logger.info("Initializing server components...");
-    await connectDB();
-    logger.info(`Server is running on port ${PORT}`);
+  logger.info('Initializing server components...');
+  await connectDB();
+  logger.info(`Server is running on port ${PORT}`);
 });

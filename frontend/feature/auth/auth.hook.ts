@@ -10,7 +10,7 @@ import { getUser } from "./auth.api";
 
 // Hook to Post Signin User
 export const useSignIn = () => {
-    let loginUser = useAuthStore((state) => state.login);
+    const loginUser = useAuthStore((state) => state.login);
 
     const mutation = useMutation({
         mutationFn: (data: SignInPayload) => getSignin(data),
@@ -26,7 +26,7 @@ export const useSignIn = () => {
 
 // Hook to Post Signup User
 export const useSignup = () => {
-    let loginUser = useAuthStore((state) => state.login);
+    const loginUser = useAuthStore((state) => state.login);
 
     const mutation = useMutation({
         mutationFn: (data: SignupPayload) => getSignup(data),

@@ -1,7 +1,11 @@
-import { Router } from "express";
-import { signIn, signUp, refreshToken, logout, getUser } from "../controller/user.controller.js";
-import { validate } from "../middleware/validatemiddleware.js";
-import { GetUserRequestSchema, SigninRequestSchema, SignupRequestSchema } from "../validator/zod.js";
+import { Router } from 'express';
+import { signIn, signUp, refreshToken, logout, getUser } from '../controller/user.controller.js';
+import { validate } from '../middleware/validatemiddleware.js';
+import {
+  GetUserRequestSchema,
+  SigninRequestSchema,
+  SignupRequestSchema
+} from '../validator/zod.js';
 
 const router = Router();
 
